@@ -41,6 +41,7 @@ frontend/
     │   ├── tokens.css        colores, tipografía, espaciado, tema claro/oscuro
     │   ├── base.css          reset, tipografía y utilidades (.stack, .grid-3, .muted…)
     │   ├── layout.css        shell (sidebar + topbar), página, acceso, responsive
+    │   ├── chatbot.css       botón flotante y panel del asistente
     │   └── components.css    botones, badges, tarjetas, KPIs, tablas, formularios,
     │                         alertas, gráficos, mapa, modal, toasts…
     └── js/
@@ -48,9 +49,38 @@ frontend/
         ├── mock-api.js       API simulada (reemplazar por fetch al backend)
         ├── ui.js             íconos, shell, formato, sesión, tema, modales, toasts
         ├── charts.js         gráficos SVG y mapa de la mina
+        ├── chatbot.js        asistente conversacional (botón flotante, por reglas)
         ├── manual-entry.js   formulario de registro manual de contingencia
         └── pages/*.js        lógica de cada página
 ```
+
+## Asistente conversacional
+
+Todas las páginas con menú lateral muestran un **botón flotante** (abajo a la derecha) que abre un chat.
+El asistente responde en español usando los mismos datos que las pantallas (`AS.api`: zonas, alertas,
+sensores y turno), sin Internet y sin IA: interpreta palabras clave. Es **solo lectura**; no reconoce
+alertas ni cambia ningún dato.
+
+Preguntas que entiende:
+
+| Tema | Ejemplos |
+| --- | --- |
+| Estado general | "¿Cómo está la mina?" |
+| Alertas | "¿Qué alertas hay?", "alertas del Frente 2" |
+| Una zona | "¿Cómo está el Frente 2?", "bombeo" |
+| Una variable | "¿Dónde está más alto el CO?", "polvo", "¿y el metano ahí?" |
+| Tendencias | "¿Hay tendencias peligrosas?" |
+| Personal | "¿Dónde hay personas en riesgo?" |
+| Equipos | "¿Qué sensores fallan?" (estado, batería, calibración) |
+| Límites | "¿Cuál es el límite de metano?" |
+| Protocolo | "¿Qué hago ahora?" (protocolo de la alerta más urgente) |
+| Historial | "¿Qué pasó con la voladura?" |
+
+- Se activa desde `AS.mountShell` (en `ui.js`) y se carga con `<script src="assets/js/chatbot.js">`
+  después de `ui.js`. No aparece en `index.html` (acceso).
+- La conversación se conserva al cambiar de página durante la sesión (`sessionStorage`).
+- `AS.chatbot.reply(texto, datos)` concentra la lógica; para conectar un modelo de lenguaje
+  basta con reemplazar esa función por una llamada al backend.
 
 ## Sistema de diseño
 
