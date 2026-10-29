@@ -1,0 +1,18 @@
+# Despliegue del backend de AtmoSmart en Render (Blueprint).
+# Render → New → Blueprint → elegir este repositorio. Pedirá las dos variables de Supabase.
+# El backend también sirve el frontend: la URL de Render abre la aplicación completa.
+services:
+  - type: web
+    name: atmosmart-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev
+    startCommand: npm run start -w backend
+    healthCheckPath: /api/salud
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
