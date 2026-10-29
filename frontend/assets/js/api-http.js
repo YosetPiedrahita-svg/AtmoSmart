@@ -1,23 +1,19 @@
 /* ==========================================================================
    AtmoSmart — Adaptador HTTP hacia el backend.
 
-   Expone la MISMA interfaz que mock-api.js (AS.api), así las páginas no
+   Expone la misma interfaz de datos (AS.api) que usan las páginas, así las páginas no
    cambian. Los datos vienen SIEMPRE del backend (Supabase). Si el backend no
    responde, no se inventan datos: se muestra "Sin conexión con el servidor" y
    se reintenta cada 3 s hasta que vuelva.
 
    Dirección del backend: AS.BACKEND_URL (config.js) o ?backend=https://...
-   Solo para desarrollo sin servidor: ?datos=mock (se recuerda en el navegador;
-   ?datos=backend lo desactiva).
    ========================================================================== */
 
 (function () {
   const mock = AS.api;
   const params = new URLSearchParams(location.search);
-  if (params.get("datos")) AS.storage.set("datos", params.get("datos"));
   if (params.get("backend")) AS.storage.set("backendUrl", params.get("backend"));
 
-  const preferencia = AS.storage.get("datos", "backend");
   const servidoPorBackend = location.protocol === "http:" || location.protocol === "https:";
   const BASE = String(AS.storage.get("backendUrl", null) || AS.BACKEND_URL || (servidoPorBackend ? location.origin : "http://localhost:3000")).replace(/\/$/, "");
 
@@ -54,11 +50,6 @@
 
   /** Conecta con el backend y adopta sus límites. Reintenta hasta lograrlo; resuelve true cuando hay backend. */
   const listo = (async () => {
-    if (preferencia === "mock") {
-      AS.dataMode = "mock";
-      avisarModo();
-      return false;
-    }
     for (;;) {
       try {
         const ctrl = new AbortController();
@@ -86,36 +77,29 @@
     }
   })();
 
-  /** Usa el backend si está disponible; si no, la función equivalente del mock. */
-  const usar = (http, respaldo) => async (...args) => ((await listo) ? http(...args) : respaldo(...args));
+  /** Espera a que haya conexión con el backend y llama a su endpoint. Nunca hay datos locales de respaldo. */
+  const usar = (http) => async (...args) => {
+    await listo;
+    return http(...args);
+  };
 
   AS.api = {
-    getMineLayout: usar(() => get("/api/mina/plano"), mock.getMineLayout),
-    getZonesStatus: usar(() => get("/api/zonas/estado"), mock.getZonesStatus),
-    getZoneStatus: usar((id) => get(`/api/zonas/${encodeURIComponent(id)}/estado`).catch(() => null), mock.getZoneStatus),
+    getMineLayout: usar(() => get("/api/mina/plano")),
+    getZonesStatus: usar(() => get("/api/zonas/estado")),
+    getZoneStatus: usar((id) => get(`/api/zonas/${encodeURIComponent(id)}/estado`).catch(() => null)),
     getSeries: usar(
-      ({ zoneId, varKey, minutes = 60, step = 1 }) => get(`/api/mediciones/serie?${q({ zona: zoneId, variable: varKey, minutos: minutes, paso: step })}`),
-      mock.getSeries
-    ),
+      ({ zoneId, varKey, minutes = 60, step = 1 }) => get(`/api/mediciones/serie?${q({ zona: zoneId, variable: varKey, minutos: minutes, paso: step })}`)),
     getForecast: usar(
-      ({ zoneId, varKey, minutes = 30 }) => get(`/api/mediciones/pronostico?${q({ zona: zoneId, variable: varKey, minutos: minutes })}`),
-      mock.getForecast
-    ),
+      ({ zoneId, varKey, minutes = 30 }) => get(`/api/mediciones/pronostico?${q({ zona: zoneId, variable: varKey, minutos: minutes })}`)),
     getHistoryTable: usar(
-      ({ zoneId = "all", hours = 8, step = 10 }) => get(`/api/mediciones/historial?${q({ zona: zoneId, horas: hours, paso: step })}`),
-      mock.getHistoryTable
-    ),
-    getAlerts: usar(() => get("/api/alertas"), mock.getAlerts),
+      ({ zoneId = "all", hours = 8, step = 10 }) => get(`/api/mediciones/historial?${q({ zona: zoneId, horas: hours, paso: step })}`)),
+    getAlerts: usar(() => get("/api/alertas")),
     ackAlert: usar(
-      (id, { user, note } = {}) => pedir("POST", `/api/alertas/${encodeURIComponent(id)}/reconocer`, { user: user || AS.session.user().name, note: note || "" }),
-      mock.ackAlert
-    ),
-    getDevices: usar(() => get("/api/dispositivos"), mock.getDevices),
+      (id, { user, note } = {}) => pedir("POST", `/api/alertas/${encodeURIComponent(id)}/reconocer`, { user: user || AS.session.user().name, note: note || "" })),
+    getDevices: usar(() => get("/api/dispositivos")),
     addManualReading: usar(
-      (lectura) => pedir("POST", "/api/mediciones/manual", Object.assign({ user: AS.session.user().name }, lectura)),
-      mock.addManualReading
-    ),
-    getShiftSummary: usar(() => get("/api/turno"), mock.getShiftSummary),
+      (lectura) => pedir("POST", "/api/mediciones/manual", Object.assign({ user: AS.session.user().name }, lectura))),
+    getShiftSummary: usar(() => get("/api/turno")),
     /** Solo con backend: guarda los límites de una variable en el servidor. */
     saveLimits: (key, thresholds) => pedir("PUT", `/api/limites/${encodeURIComponent(key)}`, { thresholds, user: AS.session.user().name }),
     /** Notifica cambios en vivo (SSE). Devuelve una función para cancelar. */

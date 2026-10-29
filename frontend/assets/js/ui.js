@@ -255,10 +255,9 @@
       const modos = {
         backend: ["Backend · datos de sensores", false, `Conectado a ${AS.backendUrl}`],
         "backend-caido": ["Sin conexión con el servidor · reintentando", true, `No hay conexión en vivo con ${AS.backendUrl}`],
-        mock: ["Modo demo · datos locales", true, "Sin backend: se usan datos simulados en el navegador"],
         conectando: ["Conectando…", false, ""],
       };
-      const [texto, aviso, titulo] = modos[AS.dataMode] || modos.mock;
+      const [texto, aviso, titulo] = modos[AS.dataMode] || modos.conectando;
       fuente.classList.toggle("is-offline", aviso);
       fuente.lastElementChild.textContent = texto;
       fuente.title = titulo;

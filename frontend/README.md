@@ -127,7 +127,6 @@ busca el backend en `http://localhost:3000`.
 
 | Parámetro de URL | Efecto (se recuerda en el navegador) |
 | --- | --- |
-| `?datos=mock` / `?datos=backend` | Los datos vienen siempre del backend (Supabase). `mock` solo sirve para desarrollar sin servidor |
 | `?backend=http://IP:3000` | Usa un backend en otra dirección |
 
 Con backend conectado, la página de **Límites** guarda los cambios en el servidor, con historial
