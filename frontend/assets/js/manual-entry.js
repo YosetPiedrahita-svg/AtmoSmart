@@ -58,7 +58,8 @@ AS.openManualEntry = function (zoneId, onSaved) {
             const kind = worst.includes("crit") ? "crit" : worst.includes("warn") ? "warn" : "ok";
             AS.toast(kind === "ok" ? "Lectura manual guardada. Valores dentro de límites." : "Lectura guardada. Hay valores fuera de límites: revise el protocolo.", kind);
             if (onSaved) onSaved(row);
-          });
+          })
+          .catch((e) => AS.toast(`No se pudo guardar: ${AS.escape(e.message)}`, "crit", 6000));
       });
     },
   });

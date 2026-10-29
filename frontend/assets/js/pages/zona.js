@@ -57,7 +57,8 @@
   function refresh() {
     Promise.all([AS.api.getZoneStatus(zone.id), AS.api.getAlerts(), AS.api.getDevices()]).then(([z, alerts, devices]) => {
       const r = z.reading;
-      AS.qs("[data-zone-badge]").innerHTML = AS.badge(r.zoneStatus);
+      AS.qs("[data-zone-badge]").innerHTML = AS.badge(r.zoneStatus) +
+        (r.fanRunning == null ? "" : ` ${r.fanRunning ? AS.badge("ok", "Ventilador auxiliar en marcha") : AS.badge("crit", "Ventilador auxiliar detenido")}`);
 
       AS.qs("[data-offline]").innerHTML = r.zoneStatus === "off"
         ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("wifiOff", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Zona sin monitoreo</div><div class="banner-text">El detector fijo no reporta desde ${AS.fmt.time(r.ts)}. Mida con detector portátil y use “Registro manual” mientras se restablece.</div></div></div>`
@@ -83,7 +84,7 @@
 
       AS.qs("[data-devices]").innerHTML = devices
         .filter((d) => d.zoneId === zone.id)
-        .map((d) => `<tr><td><strong class="mono text-xs">${d.id}</strong><div class="text-xs muted">${AS.escape(d.type)}${d.holder ? ` · ${AS.escape(d.holder)}` : ""}</div></td><td>${AS.badge(d.status === "off" ? "off" : "ok", d.status === "off" ? "Sin señal" : "En línea")}</td><td class="text-xs muted nowrap">${AS.fmt.ago(d.lastSeen)}</td></tr>`)
+        .map((d) => `<tr><td><strong class="mono text-xs">${d.id}</strong><div class="text-xs muted">${AS.escape(d.type)}${d.holder ? ` · ${AS.escape(d.holder)}` : ""}</div></td><td>${d.status === "ok" ? AS.badge("ok", "En línea") : AS.badge("off", d.status === "pending" ? "Sin datos aún" : "Sin señal")}</td><td class="text-xs muted nowrap">${AS.fmt.ago(d.lastSeen)}</td></tr>`)
         .join("");
     });
     renderChart();

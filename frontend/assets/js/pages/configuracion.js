@@ -33,10 +33,31 @@
       AS.toast(`Revise el orden de los límites en: ${errors.join(", ")} (deben ir de menor a mayor).`, "crit", 6000);
       return;
     }
+    if (AS.dataMode === "backend") {
+      // Solo se envían las variables que cambiaron; el servidor guarda el historial de cambios.
+      const cambiadas = AS.VARIABLES.filter((v) => FIELDS.some((f) => (AS.getThresholds(v.key)[f] ?? null) !== custom[v.key][f]));
+      Promise.all(cambiadas.map((v) => AS.api.saveLimits(v.key, custom[v.key])))
+        .then(() => {
+          cambiadas.forEach((v) => (v.thresholds = Object.assign({}, custom[v.key])));
+          AS.toast(cambiadas.length ? `Límites guardados en el servidor (${cambiadas.length} variable/s). Las alertas se recalculan.` : "No hubo cambios.", "ok");
+          AS.refreshAlertCount();
+        })
+        .catch((err) => AS.toast(`No se pudieron guardar: ${AS.escape(err.message)}`, "crit", 6000));
+      return;
+    }
     AS.storage.set("thresholds", custom);
     AS.toast("Límites guardados. Las alertas se recalculan con los nuevos valores.", "ok");
     AS.refreshAlertCount();
   });
+
+  // Con backend, los valores por defecto se restauran desde el servidor (npm run db:seed).
+  const ajustarModo = () => {
+    AS.qs("[data-reset]").classList.toggle("hidden", AS.dataMode === "backend");
+    AS.qs("[data-storage-note]").textContent =
+      AS.dataMode === "backend" ? "Los cambios se guardan en el servidor y quedan registrados con su usuario." : "Los cambios se guardan en este navegador.";
+    renderRows();
+  };
+  document.addEventListener("as:datamode", ajustarModo);
 
   AS.qs("[data-reset]").addEventListener("click", () => {
     AS.storage.remove("thresholds");

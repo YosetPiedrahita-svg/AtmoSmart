@@ -6,8 +6,8 @@
   let devices = [];
   const typeSel = AS.qs("#f-type");
 
-  function battery(level) {
-    if (level == null) return '<span class="muted text-xs">Red eléctrica</span>';
+  function battery(level, power) {
+    if (level == null) return `<span class="muted text-xs">${power && power.includes("Batería") ? "—" : "Red eléctrica"}</span>`;
     const cls = level < 20 ? "low" : level < 40 ? "mid" : "ok";
     return `<span class="battery" data-level="${cls}"><span class="battery-bar"><span style="width:${level}%"></span></span>${level}%</span>`;
   }
@@ -25,14 +25,14 @@
     AS.qs("[data-rows]").innerHTML = list
       .map((d) => {
         const zone = AS.getZone(d.zoneId);
-        const measures = d.vars.length ? d.vars.map((k) => AS.getVariable(k).short).join(", ") : "—";
+        const measures = d.vars.length ? d.vars.map((k) => (AS.getVariable(k) || { short: k === "ventilador" ? "Ventilador (marcha)" : k === "personas" ? "Personal" : k }).short).join(", ") : "—";
         return `<tr data-status="${d.status === "off" ? "crit" : d.calDays != null && d.calDays < 0 ? "warn" : ""}">
           <td><strong class="mono">${d.id}</strong>${d.holder ? `<div class="text-xs muted">${AS.escape(d.holder)}</div>` : ""}</td>
           <td>${AS.escape(d.type)}</td>
           <td class="nowrap"><a href="zona.html?id=${d.zoneId}">${AS.escape(zone ? zone.name : "")}</a></td>
           <td class="text-xs">${measures}</td>
-          <td>${d.status === "off" ? AS.badge("off", "Sin señal") : AS.badge("ok", "En línea")}</td>
-          <td>${battery(d.battery)}</td>
+          <td>${d.status === "off" ? AS.badge("off", "Sin señal") : d.status === "pending" ? AS.badge("off", "Sin datos aún") : AS.badge("ok", "En línea")}</td>
+          <td>${battery(d.battery, d.power)}</td>
           <td>${calibration(d.calDays)}</td>
           <td class="nowrap text-xs muted">${AS.fmt.ago(d.lastSeen)}</td>
         </tr>`;

@@ -80,17 +80,22 @@
 
       const limitLine = (v, cls) => (v != null && v > yMin && v < yMax ? `<line class="${cls}" x1="${pad.left}" x2="${pad.left + iw}" y1="${y(v)}" y2="${y(v)}"/>` : "");
 
-      // Línea (cortada en huecos sin datos)
-      let d = "";
-      let pen = false;
+      // Línea y relleno por tramos continuos (se cortan en los huecos sin datos)
+      const tramos = [];
+      let tramo = [];
       points.forEach((p) => {
-        if (p.v == null) { pen = false; return; }
-        d += `${pen ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`;
-        pen = true;
+        if (p.v == null) {
+          if (tramo.length) tramos.push(tramo);
+          tramo = [];
+        } else tramo.push(p);
       });
-      const first = valid[0];
-      const last = valid[valid.length - 1];
-      const area = `${d}L${x(last.t).toFixed(1)},${pad.top + ih}L${x(first.t).toFixed(1)},${pad.top + ih}Z`;
+      if (tramo.length) tramos.push(tramo);
+      const xy = (p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`;
+      const d = tramos.map((t) => "M" + t.map(xy).join("L")).join("");
+      const base = pad.top + ih;
+      const area = tramos
+        .map((t) => `M${xy(t[0])}L${t.slice(1).map(xy).join("L") || xy(t[0])}L${x(t[t.length - 1].t).toFixed(1)},${base}L${x(t[0].t).toFixed(1)},${base}Z`)
+        .join("");
       const fc = forecast.length ? `<path class="forecast" d="M${x(forecast[0].t)},${y(forecast[0].v)}L${x(forecast[1].t)},${y(forecast[1].v)}"/>` : "";
 
       el.innerHTML = `
