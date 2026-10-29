@@ -3,8 +3,9 @@
 
    Solo dos niveles avisan; cada uno con su propio carácter:
 
-     Alarma (crit)      Tarjeta fija en pantalla + sirena de dos tonos, aguda,
-                        rápida y fuerte, que suena sin parar hasta que se pulse
+     Alarma (crit)      Tarjeta fija en pantalla + sirena de emergencia con
+                        barrido (560–1250 Hz, timbre saturado y volumen alto)
+                        que suena sin parar hasta que se pulse
                         "Silenciar" en la tarjeta. Silenciar no cierra la alarma:
                         la tarjeta sigue hasta que se reconozca en Alertas.
                         Vibración larga e insistente.
@@ -40,14 +41,15 @@
   const PROFILES = {
     crit: {
       label: "Alarma",
-      wave: "square", // timbre áspero que se distingue del ruido de la mina
-      freqs: [988, 784], // sirena alternando agudo / medio
-      pulseMs: 240,
-      gapMs: 80,
-      pulses: 8,
-      gain: 0.5,
-      loopGapMs: 500, // pausa entre repeticiones: suena sin parar hasta silenciar o reconocer
-      vibrate: [500, 120, 500, 120, 500, 120, 500],
+      kind: "siren", // sirena de emergencia con barrido (wail), no pitidos sueltos
+      lowHz: 560,
+      highHz: 1250,
+      sweepMs: 1000, // un ciclo completo sube y baja en 1 s
+      cycles: 3,
+      durationMs: 3000,
+      gain: 0.7,
+      loopGapMs: 300, // casi sin pausa: suena hasta silenciar o reconocer
+      vibrate: [600, 100, 600, 100, 600, 100, 600, 100, 600],
     },
     warn: {
       label: "Precaución",
@@ -106,6 +108,7 @@
       }
       return false;
     }
+    if (profile.kind === "siren") return playSiren(c, profile);
     const master = c.createGain();
     master.gain.value = profile.gain;
     master.connect(c.destination);
@@ -127,6 +130,51 @@
       osc.stop(t + dur + 0.02);
       t += dur + profile.gapMs / 1000;
     }
+    return true;
+  }
+
+  /** Sirena de emergencia: barrido continuo agudo-grave con timbre áspero y saturado, como una sirena industrial. */
+  function playSiren(c, profile) {
+    const t0 = c.currentTime + 0.03;
+    const total = profile.durationMs / 1000;
+    const half = profile.sweepMs / 2000;
+
+    // Curva de frecuencia: sube y baja suavemente, ciclo tras ciclo
+    const steps = 64;
+    const curve = new Float32Array(profile.cycles * steps);
+    for (let i = 0; i < curve.length; i++) {
+      const ph = (i % steps) / steps; // 0..1 dentro del ciclo
+      const tri = ph < 0.5 ? ph * 2 : 2 - ph * 2; // triángulo 0..1
+      const eased = 0.5 - 0.5 * Math.cos(Math.PI * tri); // barrido suave
+      curve[i] = profile.lowHz + (profile.highHz - profile.lowHz) * eased;
+    }
+
+    // Saturación suave: añade armónicos y el carácter "duro" de una sirena real
+    const shaper = c.createWaveShaper();
+    const k = 40, n = 512, sat = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const x = (i * 2) / n - 1; sat[i] = ((3 + k) * x * 20 * (Math.PI / 180)) / (Math.PI + k * Math.abs(x)); }
+    shaper.curve = sat;
+
+    const comp = c.createDynamicsCompressor(); // mantiene el volumen alto y parejo
+    comp.threshold.value = -24; comp.ratio.value = 10;
+    const master = c.createGain();
+    master.gain.setValueAtTime(0.0001, t0);
+    master.gain.exponentialRampToValueAtTime(profile.gain, t0 + 0.06);
+    master.gain.setValueAtTime(profile.gain, t0 + total - 0.08);
+    master.gain.exponentialRampToValueAtTime(0.0001, t0 + total);
+    shaper.connect(comp); comp.connect(master); master.connect(c.destination);
+
+    // Dos osciladores ligeramente desafinados + una octava arriba, como el batido de una sirena mecánica
+    [["sawtooth", 1, 0.5], ["square", 1.012, 0.25], ["sawtooth", 2, 0.12]].forEach(([wave, mult, g]) => {
+      const osc = c.createOscillator();
+      const og = c.createGain();
+      osc.type = wave;
+      og.gain.value = g;
+      osc.frequency.setValueCurveAtTime(curve.map((f) => f * mult), t0, total);
+      osc.connect(og); og.connect(shaper);
+      osc.start(t0);
+      osc.stop(t0 + total + 0.02);
+    });
     return true;
   }
 
@@ -261,7 +309,7 @@
   function loop() {
     if (!pendingCrit.some((a) => !isMuted(a.id))) return;
     const profile = PROFILES.crit;
-    const cycle = profile.pulses * (profile.pulseMs + profile.gapMs) + profile.loopGapMs;
+    const cycle = profile.durationMs + profile.loopGapMs;
     const now = Date.now();
     if (now - lastLoop < cycle) return;
     const c = getCtx();
