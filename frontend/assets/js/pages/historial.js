@@ -4,8 +4,13 @@
 
   const PAGE_SIZE = 25;
   const zoneSel = AS.qs("#f-zone");
-  zoneSel.innerHTML = `<option value="all">Todas las zonas</option>` + AS.ZONES.map((z) => `<option value="${z.id}">${AS.escape(z.name)}</option>`).join("");
-  zoneSel.value = AS.param("zona") || "all";
+  const fillZones = () => {
+    const sel = zoneSel.value || AS.param("zona") || "all";
+    zoneSel.innerHTML = `<option value="all">Todas las zonas</option>` + AS.ZONES.map((z) => `<option value="${z.id}">${AS.escape(z.name)}</option>`).join("");
+    zoneSel.value = AS.ZONES.some((z) => z.id === sel) ? sel : "all";
+  };
+  fillZones();
+  document.addEventListener("as:zones", fillZones); // las zonas llegan del servidor
 
   AS.qs("[data-head]").innerHTML = `<tr><th>Fecha / hora</th><th>Zona</th>${AS.VARIABLES.map((v) => `<th class="num">${v.short} <span class="subtle">${v.unit}</span></th>`).join("")}<th>Origen</th></tr>`;
 

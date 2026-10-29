@@ -2,7 +2,13 @@
   AS.mountShell({ active: "alertas", title: "Alertas" });
 
   const zoneSel = AS.qs("#f-zone");
-  zoneSel.innerHTML = `<option value="all">Todas</option>` + AS.ZONES.map((z) => `<option value="${z.id}">${AS.escape(z.name)}</option>`).join("");
+  const fillZones = () => {
+    const sel = zoneSel.value || "all";
+    zoneSel.innerHTML = `<option value="all">Todas</option>` + AS.ZONES.map((z) => `<option value="${z.id}">${AS.escape(z.name)}</option>`).join("");
+    zoneSel.value = AS.ZONES.some((z) => z.id === sel) ? sel : "all";
+  };
+  fillZones();
+  document.addEventListener("as:zones", fillZones); // las zonas llegan del servidor
 
   let tab = "pending";
   let alerts = [];

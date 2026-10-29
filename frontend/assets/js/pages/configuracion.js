@@ -93,5 +93,6 @@
   AS.qsa("[data-test-alert]").forEach((btn) => btn.addEventListener("click", () => AS.alarm && AS.alarm.test(btn.dataset.testAlert)));
 
   renderNorm();
+  document.addEventListener("as:zones", renderNorm); // las zonas llegan del servidor
   renderCriteria();
 })();

@@ -48,6 +48,22 @@
     es.onopen = () => { if (AS.dataMode === "backend-caido") { AS.dataMode = "backend"; avisarModo(); } };
   }
 
+  /**
+   * Las zonas vienen del backend (Supabase). Se actualiza AS.ZONES en el mismo arreglo para que todas las
+   * páginas las usen igual que antes. La clasificación normativa de cada labor (labor/vent, usada por
+   * normativa.js) se conserva por id; una zona nueva usa la clasificación más general.
+   */
+  async function cargarZonas() {
+    const zonas = await get("/api/zonas");
+    if (!Array.isArray(zonas) || !zonas.length) return;
+    const previas = new Map(AS.ZONES.map((z) => [z.id, z]));
+    AS.ZONES.splice(0, AS.ZONES.length, ...zonas.map((z) => {
+      const prev = previas.get(z.id) || {};
+      return { id: z.id, name: z.name, level: z.level, type: z.type, labor: prev.labor || "via_general", vent: prev.vent || "via_explotacion" };
+    }));
+    document.dispatchEvent(new CustomEvent("as:zones"));
+  }
+
   /** Conecta con el backend y adopta sus límites. Reintenta hasta lograrlo; resuelve true cuando hay backend. */
   const listo = (async () => {
     for (;;) {
@@ -64,6 +80,7 @@
           if (local) local.thresholds = Object.assign({}, v.thresholds);
         });
         AS.getThresholds = (key) => Object.assign({}, (AS.getVariable(key) || { thresholds: {} }).thresholds);
+        await cargarZonas();
         AS.dataMode = "backend";
         avisarModo();
         abrirEventos();
@@ -85,6 +102,7 @@
 
   AS.api = {
     getMineLayout: usar(() => get("/api/mina/plano")),
+    getZones: usar(() => get("/api/zonas")),
     getZonesStatus: usar(() => get("/api/zonas/estado")),
     getZoneStatus: usar((id) => get(`/api/zonas/${encodeURIComponent(id)}/estado`).catch(() => null)),
     getSeries: usar(

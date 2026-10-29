@@ -59,6 +59,11 @@ export function crearServidor(o: OpcionesServidor) {
     });
   }));
 
+  // Catálogo de zonas (Supabase → frontend). El estado en vivo está en /zonas/estado.
+  api.get("/zonas", (_req, res) => {
+    res.json(servicio.listarZonas().map((z) => ({ id: z.id, name: z.nombre, level: z.nivel, type: z.tipo, laborType: z.tipoLabor, order: z.orden })));
+  });
+
   api.get("/mina/plano", asincrono(async (_req, res) => {
     const plano = await servicio.plano();
     if (!plano) return res.status(404).json({ error: "No hay plano vigente" });
