@@ -9,6 +9,9 @@ import { AlertasEnMemoria, CatalogoEnMemoria, MedicionesEnMemoria } from "./adap
 import { AlertasSupabase, CatalogoSupabase, MedicionesSupabase, crearClienteSupabase } from "./adapters/out/supabase/repositorios-supabase";
 import { PublicadorSSE } from "./adapters/out/sse/publicador-sse";
 import { crearServidor } from "./adapters/in/http/servidor";
+import { spawn } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const env = process.env;
 const usarSupabase = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
@@ -51,3 +54,32 @@ crearServidor({ servicio, sse, tokenIngesta: env.INGESTA_TOKEN || undefined, alm
   console.log(`  Frontend:  http://localhost:${puerto}/`);
   console.log(`  API:       http://localhost:${puerto}/api/salud`);
 });
+
+/**
+ * Simulador de sensores integrado (opcional). Con SIMULADOR=1 el servidor lanza el simulador del
+ * repositorio, que envía lecturas a este mismo backend por POST /api/ingesta, igual que lo haría un
+ * gateway real. Sirve para tener datos siempre en vivo sin dejar un computador encendido.
+ *   SIMULADOR=1                  activa la simulación (rota los escenarios solos)
+ *   SIMULADOR_MINUTOS=3          minutos por escenario (por defecto 3)
+ *   SIMULADOR_HISTORICO=1        carga 6 h de historia al arrancar (hágalo UNA vez: repetirlo duplica el historial)
+ */
+if (env.SIMULADOR === "1") {
+  const raiz = join(dirname(fileURLToPath(import.meta.url)), "../..");
+  const direccion = `http://localhost:${puerto}`;
+  const ejecutar = (guion: string, args: string[]) =>
+    spawn(process.execPath, ["--import", "tsx", join(raiz, "simulador/src", guion), "--url", direccion, ...args], { cwd: raiz, stdio: "inherit", env });
+
+  const lanzarSimulacion = () => {
+    const hijo = ejecutar("simular.ts", ["--rotar", String(env.SIMULADOR_MINUTOS ?? 3), "--velocidad", String(env.SIMULADOR_VELOCIDAD ?? 3)]);
+    hijo.on("exit", (codigo) => {
+      console.warn(`Simulador detenido (código ${codigo}); se reinicia en 10 s`);
+      setTimeout(lanzarSimulacion, 10_000);
+    });
+  };
+
+  // Espera a que el servidor esté escuchando antes de enviar lecturas.
+  setTimeout(() => {
+    if (env.SIMULADOR_HISTORICO === "1") ejecutar("historico.ts", []).on("exit", lanzarSimulacion);
+    else lanzarSimulacion();
+  }, 3000);
+}

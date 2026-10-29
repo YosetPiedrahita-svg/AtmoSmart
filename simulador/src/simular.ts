@@ -12,6 +12,8 @@
  *   --intervalo  segundos entre envíos           (por defecto 5)
  *   --velocidad  acelera el escenario (5 = cinco veces más rápido; útil para el pitch)
  *   --token      valor de x-api-key si el backend define INGESTA_TOKEN
+ *   --rotar      minutos por escenario: recorre solos normal → metano → voladura → ventilador →
+ *                sin-señal → polvo, con operación normal entre cada uno (modo "siempre en vivo")
  *
  * Durante la ejecución, presione 1-6 para cambiar de escenario y q para salir.
  */
@@ -25,6 +27,8 @@ const url = (args.url ?? process.env.BACKEND_URL ?? "http://localhost:3000").rep
 const intervalo = Math.max(1, Number(args.intervalo ?? 5));
 const velocidad = Math.max(0.1, Number(args.velocidad ?? 1));
 const zona = args.zona ?? "frente-2";
+const rotarMin = Number(args.rotar ?? 0);
+const SECUENCIA = ["normal", "metano", "normal", "voladura", "normal", "ventilador", "normal", "sin-senal", "normal", "polvo"];
 const cliente = new ClienteBackend(url, args.token ?? process.env.INGESTA_TOKEN);
 
 let activo: EscenarioActivo = {
@@ -88,6 +92,15 @@ async function main() {
 
   await tick();
   setInterval(tick, intervalo * 1000);
+
+  if (rotarMin > 0) {
+    let paso = SECUENCIA.indexOf(activo.escenario.id);
+    console.log(`Rotación automática de escenarios cada ${rotarMin} min: ${SECUENCIA.join(" → ")}`);
+    setInterval(() => {
+      paso = (paso + 1) % SECUENCIA.length;
+      cambiar(SECUENCIA[paso]);
+    }, rotarMin * 60_000);
+  }
 }
 
 main().catch((e) => {

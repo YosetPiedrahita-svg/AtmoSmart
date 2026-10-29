@@ -42,6 +42,14 @@ Mientras corre, presione **1–6** para cambiar de escenario y **q** para salir.
 | 5 | `voladura` | Pico de CO, NO₂ y polvo que decae con la ventilación |
 | 6 | `polvo` | Polvo de carbón respirable en aumento |
 
+### Siempre en vivo (sin dejar un computador encendido)
+
+`npm run simular -- --rotar 3` recorre solo los escenarios (3 min cada uno, con operación normal entre ellos).
+En Render, el propio backend lanza el simulador si se define `SIMULADOR=1` (ya está en `render.yaml`);
+`SIMULADOR_MINUTOS` fija los minutos por escenario y `SIMULADOR_HISTORICO=1` carga 6 h de historia
+**una sola vez** (repetirlo duplica el historial). Es un reemplazo temporal de los sensores reales:
+para producción se quita `SIMULADOR`.
+
 ### Opciones
 
 | Opción | Por defecto | Descripción |

@@ -16,3 +16,9 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # Datos siempre en vivo sin dejar un computador encendido (simulador integrado).
+      - key: SIMULADOR
+        value: "1"
+      - key: SIMULADOR_MINUTOS
+        value: "3"
+      # Ponga SIMULADOR_HISTORICO=1 solo la primera vez (carga 6 h de historia) y luego quítelo.
