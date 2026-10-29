@@ -244,6 +244,7 @@
 
     AS.refreshAlertCount();
     AS.markSynced();
+    if (AS.mountChatbot) AS.mountChatbot(); // asistente conversacional (chatbot.js)
   };
 
   AS.refreshAlertCount = function () {
