@@ -14,6 +14,8 @@ import { alertaDto, dispositivoDto, estadoZonaDto, variableDto } from "./present
 export interface OpcionesServidor {
   servicio: ServicioMonitoreo;
   sse: PublicadorSSE;
+  /** false desactiva POST /simulacion/generar (datos de prueba); por defecto está activo */
+  permitirSimulacion?: boolean;
   /** si se define, los sensores deben enviarlo en la cabecera x-api-key */
   tokenIngesta?: string;
   /** carpeta del frontend para servirlo en la misma dirección (opcional) */
@@ -63,6 +65,26 @@ export function crearServidor(o: OpcionesServidor) {
   api.get("/zonas", (_req, res) => {
     res.json(servicio.listarZonas().map((z) => ({ id: z.id, name: z.nombre, level: z.nivel, type: z.tipo, laborType: z.tipoLabor, order: z.orden })));
   });
+
+  // Límites y configuración (guardados en Supabase). Deben ir ANTES de PUT /limites/:clave.
+  api.get("/limites/configuracion", asincrono(async (_req, res) => {
+    res.json(await servicio.limitesConfiguracion());
+  }));
+
+  api.put("/limites/criterios", asincrono(async (req, res) => {
+    await servicio.guardarCriterios(req.body?.criterios ?? {}, req.body?.user ?? "desconocido");
+    res.json({ ok: true });
+  }));
+
+  // Servicio de alertas: reevaluar con los límites vigentes y generar datos de prueba (precaución / alarma).
+  api.post("/alertas/evaluar", asincrono(async (_req, res) => {
+    res.json(await servicio.evaluarAhora());
+  }));
+
+  api.post("/simulacion/generar", asincrono(async (req, res) => {
+    if (o.permitirSimulacion === false) return res.status(403).json({ error: "La generación de datos de prueba está desactivada" });
+    res.status(201).json(await servicio.generarDatosPrueba({ zonaId: req.body?.zoneId, variable: req.body?.variable, nivel: req.body?.level }));
+  }));
 
   api.get("/mina/plano", asincrono(async (_req, res) => {
     const plano = await servicio.plano();

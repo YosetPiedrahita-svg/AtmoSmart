@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Dispositivo, Plano, TipoLabor, Turno, Variable, Zona } from "../domain/modelo";
+import type { ConfiguracionLimites, CriterioInterno, Dispositivo, LimiteNormativo, LimiteZona, Plano, TipoLabor, Turno, Variable, Zona } from "../domain/modelo";
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), "../../config");
 const leer = <T>(archivo: string): T => JSON.parse(readFileSync(join(DIR, archivo), "utf8")) as T;
@@ -60,4 +60,35 @@ export const catalogoJson = {
     const p = leer<{ version: number; updatedAt: string; source: string }>("plano.json");
     return { version: p.version, actualizado: p.updatedAt, fuente: p.source, contenido: p };
   },
+};
+
+// ---- Límites y configuración (pantalla "Límites y configuración") ----------------
+
+export interface LimiteNormativoFila { id: string; variable: string; limite: string; como_se_evalua: string; referencia: string; orden: number }
+export interface LimiteZonaFila {
+  zona_id: string; sitio_labor: string; labor_clave: string; ch4_max: number | string; labor_criterio_interno: boolean;
+  tipo_via: string; vent_clave: string; aire_min: number | string | null; aire_max: number | string | null; via_criterio_interno: boolean;
+}
+export interface CriterioFila { clave: string; etiqueta: string; unidad: string; valor: string }
+
+const num = (x: number | string | null): number | null => (x == null ? null : Number(x));
+/** Los criterios se guardan como texto: los numéricos se devuelven como número. */
+export const criterioValor = (v: string): number | string => (v.trim() !== "" && Number.isFinite(Number(v)) ? Number(v) : v);
+
+export const normativoDesdeFila = (f: LimiteNormativoFila): LimiteNormativo => ({ id: f.id, variable: f.variable, limite: f.limite, comoSeEvalua: f.como_se_evalua, referencia: f.referencia, orden: f.orden });
+export const limiteZonaDesdeFila = (f: LimiteZonaFila): LimiteZona => ({
+  zonaId: f.zona_id, sitioLabor: f.sitio_labor, laborClave: f.labor_clave, ch4Max: Number(f.ch4_max), laborCriterioInterno: f.labor_criterio_interno,
+  tipoVia: f.tipo_via, ventClave: f.vent_clave, aireMin: num(f.aire_min), aireMax: num(f.aire_max), viaCriterioInterno: f.via_criterio_interno,
+});
+export const criterioDesdeFila = (f: CriterioFila): CriterioInterno => ({ clave: f.clave, etiqueta: f.etiqueta, unidad: f.unidad, valor: criterioValor(f.valor) });
+
+export const limitesJson = {
+  normativos: () => leer<LimiteNormativoFila[]>("limites-normativos.json"),
+  zonas: () => leer<LimiteZonaFila[]>("limites-zona.json"),
+  criterios: () => leer<CriterioFila[]>("criterios-internos.json"),
+  configuracion: (): ConfiguracionLimites => ({
+    normativos: limitesJson.normativos().map(normativoDesdeFila),
+    zonas: limitesJson.zonas().map(limiteZonaDesdeFila),
+    criterios: limitesJson.criterios().map(criterioDesdeFila),
+  }),
 };

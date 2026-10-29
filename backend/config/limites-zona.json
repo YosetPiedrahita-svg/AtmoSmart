@@ -1,0 +1,98 @@
+[
+  {
+    "zona_id": "bocamina",
+    "sitio_labor": "Vía de entrada de aire, transporte o servicio",
+    "labor_clave": "via_general",
+    "ch4_max": 1,
+    "labor_criterio_interno": true,
+    "tipo_via": "Ventilación principal: vía de explotación (galería o sobreguía)",
+    "vent_clave": "via_explotacion",
+    "aire_min": 0.5,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "galeria-1",
+    "sitio_labor": "Vía de entrada de aire, transporte o servicio",
+    "labor_clave": "via_general",
+    "ch4_max": 1,
+    "labor_criterio_interno": true,
+    "tipo_via": "Ventilación principal: vía de explotación (galería o sobreguía)",
+    "vent_clave": "via_explotacion",
+    "aire_min": 0.5,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "frente-1",
+    "sitio_labor": "Frente de explotación o avance",
+    "labor_clave": "frente",
+    "ch4_max": 1,
+    "labor_criterio_interno": false,
+    "tipo_via": "Ventilación auxiliar: vía en carbón",
+    "vent_clave": "aux_carbon",
+    "aire_min": 0.3,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "inclinado",
+    "sitio_labor": "Vía de entrada de aire, transporte o servicio",
+    "labor_clave": "via_general",
+    "ch4_max": 1,
+    "labor_criterio_interno": true,
+    "tipo_via": "Ventilación principal: vía de explotación (galería o sobreguía)",
+    "vent_clave": "via_explotacion",
+    "aire_min": 0.5,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "galeria-2",
+    "sitio_labor": "Vía de entrada de aire, transporte o servicio",
+    "labor_clave": "via_general",
+    "ch4_max": 1,
+    "labor_criterio_interno": true,
+    "tipo_via": "Ventilación principal: vía de explotación (galería o sobreguía)",
+    "vent_clave": "via_explotacion",
+    "aire_min": 0.5,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "frente-2",
+    "sitio_labor": "Frente de explotación o avance",
+    "labor_clave": "frente",
+    "ch4_max": 1,
+    "labor_criterio_interno": false,
+    "tipo_via": "Ventilación auxiliar: vía en carbón",
+    "vent_clave": "aux_carbon",
+    "aire_min": 0.3,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "bombeo",
+    "sitio_labor": "Vía de entrada de aire, transporte o servicio",
+    "labor_clave": "via_general",
+    "ch4_max": 1,
+    "labor_criterio_interno": true,
+    "tipo_via": "Ventilación auxiliar: vía en roca",
+    "vent_clave": "aux_roca",
+    "aire_min": 0.2,
+    "aire_max": 6,
+    "via_criterio_interno": false
+  },
+  {
+    "zona_id": "retorno",
+    "sitio_labor": "Retorno principal de aire",
+    "labor_clave": "retorno_principal",
+    "ch4_max": 1,
+    "labor_criterio_interno": false,
+    "tipo_via": "Pozo o chimenea de ventilación",
+    "vent_clave": "pozo_ventilacion",
+    "aire_min": 0.5,
+    "aire_max": null,
+    "via_criterio_interno": true
+  }
+]

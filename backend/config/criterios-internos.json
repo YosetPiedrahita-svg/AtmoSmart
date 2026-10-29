@@ -1,0 +1,62 @@
+[
+  {
+    "clave": "ch4WarnPct",
+    "etiqueta": "Precaución de metano (% del límite del Art. 53)",
+    "unidad": "%",
+    "valor": "50"
+  },
+  {
+    "clave": "o2WarnLow",
+    "etiqueta": "Precaución si el O₂ baja de",
+    "unidad": "%",
+    "valor": "20"
+  },
+  {
+    "clave": "o2WarnHigh",
+    "etiqueta": "Precaución si el O₂ sube de",
+    "unidad": "%",
+    "valor": "23"
+  },
+  {
+    "clave": "gasWarnPctTwa",
+    "etiqueta": "Precaución por lectura instantánea (% del TLV-TWA)",
+    "unidad": "%",
+    "valor": "100"
+  },
+  {
+    "clave": "accionPctTwa",
+    "etiqueta": "Nivel de acción del promedio de jornada (% del TLV-TWA)",
+    "unidad": "%",
+    "valor": "50"
+  },
+  {
+    "clave": "excursionFactor",
+    "etiqueta": "Alarma instantánea en gases sin STEL (múltiplo del TLV-TWA)",
+    "unidad": "×",
+    "valor": "5"
+  },
+  {
+    "clave": "airWarnPct",
+    "etiqueta": "Precaución de velocidad del aire (% por encima del mínimo)",
+    "unidad": "%",
+    "valor": "20"
+  },
+  {
+    "clave": "airWarnMaxPct",
+    "etiqueta": "Precaución de velocidad del aire (% del máximo)",
+    "unidad": "%",
+    "valor": "90"
+  },
+  {
+    "clave": "jornadaHoras",
+    "etiqueta": "Duración de la jornada",
+    "unidad": "h",
+    "valor": "8"
+  },
+  {
+    "clave": "teRedondeo",
+    "etiqueta": "Temperatura efectiva entre dos valores de la tabla (Art. 217)",
+    "unidad": "",
+    "valor": "arriba"
+  }
+]

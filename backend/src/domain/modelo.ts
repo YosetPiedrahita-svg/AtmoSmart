@@ -136,3 +136,17 @@ export const RANGO_ESTADO: Record<Estado, number> = { ok: 0, off: 1, warn: 2, cr
 export function peorEstado(estados: Estado[]): Estado {
   return estados.reduce<Estado>((peor, e) => (RANGO_ESTADO[e] > RANGO_ESTADO[peor] ? e : peor), "ok");
 }
+
+/** Fila de la tabla de límites normativos (variable, límite, cómo se evalúa, referencia). */
+export interface LimiteNormativo { id: string; variable: string; limite: string; comoSeEvalua: string; referencia: string; orden: number }
+
+/** Límites de una zona: sitio de la labor (metano) y tipo de vía (velocidad del aire). */
+export interface LimiteZona {
+  zonaId: string; sitioLabor: string; laborClave: string; ch4Max: number; laborCriterioInterno: boolean;
+  tipoVia: string; ventClave: string; aireMin: number | null; aireMax: number | null; viaCriterioInterno: boolean;
+}
+
+/** Criterio interno del equipo (no es un límite legal). `valor` es un número o un texto. */
+export interface CriterioInterno { clave: string; etiqueta: string; unidad: string; valor: number | string }
+
+export interface ConfiguracionLimites { normativos: LimiteNormativo[]; zonas: LimiteZona[]; criterios: CriterioInterno[] }

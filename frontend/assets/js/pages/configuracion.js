@@ -4,7 +4,23 @@
 
   const n = (x, d = 2) => (x == null ? "—" : AS.fmt.number(x, d));
 
+  // Límites y configuración guardados en la base de datos (Supabase). Si no se pueden leer, se muestran los valores locales.
+  let remoto = null;
+
   function renderNorm() {
+    if (!remoto) return renderNormLocal();
+    AS.qs("[data-norm-rows]").innerHTML = remoto.normativos
+      .map((r) => `<tr><td><strong>${AS.escape(r.variable)}</strong></td><td>${AS.escape(r.limite)}</td><td class="muted">${AS.escape(r.comoSeEvalua)}</td><td class="nowrap">${AS.escape(r.referencia)}</td></tr>`)
+      .join("");
+    AS.qs("[data-zone-rows]").innerHTML = remoto.zonas
+      .map((l) => {
+        const z = AS.getZone(l.zonaId);
+        return `<tr><td><strong>${AS.escape(z ? z.name : l.zonaId)}</strong><div class="text-xs muted">${AS.escape(z ? z.type : "")}</div></td><td>${AS.escape(l.sitioLabor)}${l.laborCriterioInterno ? ' <span class="badge badge-info no-dot">criterio interno</span>' : ""}</td><td class="num">${n(l.ch4Max, 1)} %</td><td>${AS.escape(l.tipoVia)}${l.viaCriterioInterno ? ' <span class="badge badge-info no-dot">mínimo por criterio interno</span>' : ""}</td><td class="num">${l.aireMin == null ? "—" : n(l.aireMin) + " m/s"}</td><td class="num">${l.aireMax == null ? "Exceptuado" : n(l.aireMax, 1) + " m/s"}</td></tr>`;
+      })
+      .join("");
+  }
+
+  function renderNormLocal() {
     const rows = [];
     rows.push(["O₂ Oxígeno", "No inferior a 19,5 ni superior a 23,5 % vol.", "Lectura instantánea", "Art. 38"]);
     Object.values(AS.LABORES).forEach((l) =>
@@ -29,6 +45,25 @@
   }
 
   function renderCriteria() {
+    if (remoto) return renderCriteriaRemoto();
+    renderCriteriaLocal();
+  }
+
+  function renderCriteriaRemoto() {
+    const fields = remoto.criterios.map((c) =>
+      c.clave === "teRedondeo"
+        ? `<div class="field"><label for="c-teRedondeo">${AS.escape(c.etiqueta)}</label>
+        <select class="select" id="c-teRedondeo" name="teRedondeo">
+          <option value="arriba"${c.valor === "arriba" ? " selected" : ""}>Aplicar el valor siguiente (más conservador)</option>
+          <option value="cercano"${c.valor === "cercano" ? " selected" : ""}>Aplicar el valor más cercano</option>
+        </select></div>`
+        : `<div class="field"><label for="c-${c.clave}">${AS.escape(c.etiqueta)}</label>
+        <div class="input-group"><input class="input num" id="c-${c.clave}" name="${c.clave}" type="number" step="any" inputmode="decimal" min="0" value="${c.valor}"><span class="addon">${AS.escape(c.unidad)}</span></div></div>`
+    );
+    AS.qs("[data-criteria-fields]").innerHTML = fields.join("");
+  }
+
+  function renderCriteriaLocal() {
     const c = AS.getCriterios();
     const fields = Object.entries(AS.CRITERIOS_INFO).map(([key, info]) => `
       <div class="field"><label for="c-${key}">${AS.escape(info.label)}</label>
@@ -63,13 +98,24 @@
       AS.toast(`Revise: ${errors.join("; ")}.`, "crit", 7000);
       return;
     }
-    AS.storage.set("criterios", out);
-    renderNorm();
-    AS.toast("Criterios guardados. Las alertas se recalculan con los nuevos valores.", "ok");
-    AS.refreshAlertCount();
+    guardarCriterios(out, "Criterios guardados. Las alertas se recalculan con los nuevos valores.");
   });
 
+  /** Guarda en la base de datos (si está disponible) y refleja los valores en este navegador. */
+  function guardarCriterios(valores, mensaje) {
+    const local = () => { AS.storage.set("criterios", valores); renderNorm(); AS.toast(mensaje, "ok"); AS.refreshAlertCount(); };
+    if (!remoto) return local();
+    AS.api.saveCriteria(valores)
+      .then(() => cargarRemoto())
+      .then(() => { AS.storage.set("criterios", valores); AS.toast(mensaje.replace("Criterios guardados.", "Criterios guardados en la base de datos."), "ok"); AS.refreshAlertCount(); })
+      .catch((err) => AS.toast(`No se pudieron guardar: ${AS.escape(err.message)}`, "crit", 7000));
+  }
+
   AS.qs("[data-reset]").addEventListener("click", () => {
+    if (remoto) {
+      guardarCriterios(Object.assign({}, AS.CRITERIOS_DEFAULT), "Criterios guardados. Se restauraron los valores por defecto.");
+      return;
+    }
     AS.storage.remove("criterios");
     renderCriteria();
     renderNorm();
@@ -92,7 +138,53 @@
   // Probar sonido y vibración de cada nivel
   AS.qsa("[data-test-alert]").forEach((btn) => btn.addEventListener("click", () => AS.alarm && AS.alarm.test(btn.dataset.testAlert)));
 
+  // ---------- Datos de prueba: provocan precauciones y alarmas por el flujo normal de alertas ----------
+  const GENERABLES = ["o2", "ch4", "co", "co2", "h2s", "no2", "air", "pm", "temp"];
+  const fillTest = () => {
+    const z = AS.qs("#t-zone");
+    const v = AS.qs("#t-var");
+    const zSel = z.value;
+    z.innerHTML = AS.ZONES.map((x) => `<option value="${x.id}">${AS.escape(x.name)}</option>`).join("");
+    if (AS.ZONES.some((x) => x.id === zSel)) z.value = zSel;
+    if (!v.options.length) v.innerHTML = AS.VARIABLES.filter((x) => GENERABLES.includes(x.key)).map((x) => `<option value="${x.key}">${AS.escape(x.short)} · ${AS.escape(x.label)}</option>`).join("");
+  };
+  fillTest();
+  document.addEventListener("as:zones", fillTest);
+  const NOMBRE_NIVEL = { ok: "normal", warn: "precaución", crit: "alarma" };
+  AS.qsa("[data-gen]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const level = btn.dataset.gen;
+      btn.disabled = true;
+      AS.api
+        .generateTestData({ zoneId: AS.qs("#t-zone").value, variable: AS.qs("#t-var").value, level })
+        .then((r) => {
+          const res = { ok: "normal", warn: "precaución", crit: "alarma", off: "sin señal" }[r.estadoVariable] || "—";
+          const msg = `Se envió ${AS.fmt.number(r.valor, 2)} ${AS.escape(r.unidad)} de ${AS.escape(r.nombre)} en ${AS.escape(r.zona)} (sensor ${AS.escape(r.sensor)}). Resultado: ${res}.`;
+          AS.qs("[data-gen-result]").innerHTML = `<strong>${AS.escape(NOMBRE_NIVEL[level])}</strong> · ${msg}`;
+          AS.toast(msg, r.estadoVariable === "crit" ? "crit" : r.estadoVariable === "warn" ? "warn" : "ok", 7000);
+          AS.refreshAlertCount();
+        })
+        .catch((err) => AS.toast(`No se pudo generar: ${AS.escape(err.message)}`, "crit", 7000))
+        .finally(() => { btn.disabled = false; });
+    })
+  );
+
+  function cargarRemoto() {
+    return AS.api.getLimitsConfig().then((cfg) => {
+      remoto = cfg;
+      const valores = {};
+      cfg.criterios.forEach((c) => (valores[c.clave] = c.valor));
+      AS.storage.set("criterios", Object.assign({}, AS.getCriterios(), valores));
+      renderNorm();
+      renderCriteria();
+      AS.qs("[data-storage-note]").textContent = "Estos valores están guardados en la base de datos (Supabase).";
+    });
+  }
+
   renderNorm();
   document.addEventListener("as:zones", renderNorm); // las zonas llegan del servidor
   renderCriteria();
+  cargarRemoto().catch((err) => {
+    AS.qs("[data-storage-note]").innerHTML = `<strong style="color:var(--status-crit-ink)">No se pudieron leer los límites de la base de datos:</strong> ${AS.escape(err.message)}`;
+  });
 })();

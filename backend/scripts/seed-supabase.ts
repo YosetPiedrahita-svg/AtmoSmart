@@ -6,7 +6,7 @@
  * OJO: sobrescribe los límites de las variables con los de config/variables.json.
  */
 import { crearClienteSupabase } from "../src/adapters/out/supabase/repositorios-supabase";
-import { catalogoJson } from "../src/config/catalogo-inicial";
+import { catalogoJson, limitesJson } from "../src/config/catalogo-inicial";
 
 const url = process.env.SUPABASE_URL;
 const clave = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -27,6 +27,18 @@ const plano = catalogoJson.plano();
 await upsert("zonas", catalogoJson.zonas(), "id");
 await upsert("variables", catalogoJson.variables(), "clave");
 await upsert("dispositivos", catalogoJson.dispositivos().map((d) => ({ ...d, portador: d.portador ?? null })), "id");
+// Límites y configuración (requiere haber ejecutado supabase/migrations/003_limites_configuracion.sql).
+await upsert("limites_normativos", limitesJson.normativos(), "id");
+await upsert("limites_zona", limitesJson.zonas(), "zona_id");
+{
+  // Los criterios internos los edita el equipo: solo se crean los que faltan, no se pisan los valores guardados.
+  const { data, error } = await db.from("criterios_internos").select("clave");
+  if (error) throw new Error(`criterios_internos: ${error.message}`);
+  const existentes = new Set((data ?? []).map((r: { clave: string }) => r.clave));
+  const nuevos = limitesJson.criterios().filter((c) => !existentes.has(c.clave));
+  if (nuevos.length) await upsert("criterios_internos", nuevos, "clave");
+  else console.log("✔ criterios_internos: ya existen (no se modifican)");
+}
 // Retira los equipos que ya no están en el catálogo (p. ej. el antiguo detector multigas, ahora un sensor por gas).
 {
   const vigentes = new Set(catalogoJson.dispositivos().map((d) => d.id));

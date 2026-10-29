@@ -49,7 +49,7 @@ await servicio.iniciar();
 setInterval(() => servicio.vigilar().catch((e) => console.error("vigilar:", e)), 10_000);
 
 const puerto = Number(env.PORT ?? 3000);
-crearServidor({ servicio, sse, tokenIngesta: env.INGESTA_TOKEN || undefined, almacenamiento: usarSupabase ? "supabase" : "memoria" }).listen(puerto, () => {
+crearServidor({ servicio, sse, tokenIngesta: env.INGESTA_TOKEN || undefined, permitirSimulacion: env.PERMITIR_SIMULACION !== "0", almacenamiento: usarSupabase ? "supabase" : "memoria" }).listen(puerto, () => {
   console.log(`AtmoSmart backend en http://localhost:${puerto}  (almacenamiento: ${usarSupabase ? "Supabase" : "memoria"})`);
   console.log(`  Frontend:  http://localhost:${puerto}/`);
   console.log(`  API:       http://localhost:${puerto}/api/salud`);

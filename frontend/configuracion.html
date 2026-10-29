@@ -41,7 +41,7 @@
 
     <form class="card" id="criteria-form">
       <div class="card-header">
-        <div><h2>Criterios internos</h2><p>Umbral de precaución (amarillo) y parámetros de cálculo. Se guardan en este navegador.</p></div>
+        <div><h2>Criterios internos</h2><p>Umbral de precaución (amarillo) y parámetros de cálculo. <span data-storage-note>Se guardan en este navegador.</span></p></div>
         <div class="cluster-sm">
           <button class="btn btn-sm btn-ghost" type="button" data-reset>Restaurar valores por defecto</button>
           <button class="btn btn-sm btn-primary" type="submit">Guardar criterios</button>
@@ -51,6 +51,22 @@
         <div class="form-grid" data-criteria-fields></div>
       </div>
     </form>
+
+    <div class="card">
+      <div class="card-header"><div><h2>Generar datos de prueba</h2><p>Envía una lectura que provoca una precaución o una alarma en la zona elegida. La alerta se crea por el flujo normal (con su tarjeta y sonido), no es un aviso inventado. "Normal" vuelve la variable a su valor habitual.</p></div></div>
+      <div class="card-body stack">
+        <div class="form-grid">
+          <div class="field"><label for="t-zone">Zona</label><select class="select" id="t-zone"></select></div>
+          <div class="field"><label for="t-var">Variable</label><select class="select" id="t-var"></select></div>
+        </div>
+        <div class="cluster-sm">
+          <button class="btn btn-secondary" type="button" data-gen="ok">Generar normal</button>
+          <button class="btn btn-secondary" type="button" data-gen="warn">Generar precaución</button>
+          <button class="btn btn-danger" type="button" data-gen="crit">Generar alarma</button>
+        </div>
+        <p class="muted text-sm" data-gen-result aria-live="polite"></p>
+      </div>
+    </div>
 
     <div class="grid-2">
       <div class="card">

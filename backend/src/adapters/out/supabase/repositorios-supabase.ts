@@ -6,9 +6,9 @@
  * Usa la clave de servicio: este código solo corre en el backend.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Alerta, CondicionDeAlerta, Medicion, Umbrales } from "../../../domain/modelo";
+import type { Alerta, CondicionDeAlerta, ConfiguracionLimites, Medicion, Umbrales } from "../../../domain/modelo";
 import type { AlertasRepositorio, CatalogoRepositorio, MedicionesRepositorio, PuntoAgregado } from "../../../application/ports/salida";
-import { catalogoJson, dispositivoDesdeFila, variableDesdeFila, zonaDesdeFila } from "../../../config/catalogo-inicial";
+import { catalogoJson, criterioDesdeFila, dispositivoDesdeFila, limiteZonaDesdeFila, normativoDesdeFila, variableDesdeFila, zonaDesdeFila, type CriterioFila, type LimiteNormativoFila, type LimiteZonaFila } from "../../../config/catalogo-inicial";
 
 export function crearClienteSupabase(url: string, claveServicio: string): SupabaseClient {
   return createClient(url, claveServicio, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -74,6 +74,31 @@ export class CatalogoSupabase implements CatalogoRepositorio {
     const nuevo = { low_crit: u.lowCrit, low_warn: u.lowWarn, high_warn: u.highWarn, high_crit: u.highCrit };
     verificar(await this.db.from("variables").update({ ...nuevo, actualizado_en: new Date().toISOString(), actualizado_por: usuario }).eq("clave", clave));
     verificar(await this.db.from("limites_cambios").insert({ variable: clave, anterior, nuevo, usuario }));
+  }
+
+  /** Lee las tablas de 003_limites_configuracion.sql. Si no existen o están vacías, el error dice qué falta. */
+  async limitesConfiguracion(): Promise<ConfiguracionLimites> {
+    const leerTabla = async <T>(tabla: string, orden: string) => {
+      const r = await this.db.from(tabla).select("*").order(orden);
+      if (r.error) throw new Error(`No se pudo leer la tabla "${tabla}" (¿ejecutó supabase/migrations/003_limites_configuracion.sql y luego npm run db:seed?): ${r.error.message}`);
+      return (r.data ?? []) as T[];
+    };
+    const [normativos, zonas, criterios] = await Promise.all([
+      leerTabla<LimiteNormativoFila>("limites_normativos", "orden"),
+      leerTabla<LimiteZonaFila>("limites_zona", "zona_id"),
+      leerTabla<CriterioFila>("criterios_internos", "clave"),
+    ]);
+    if (!normativos.length) throw new Error("Las tablas de límites están vacías: ejecute npm run db:seed");
+    const orden = (await this.zonas()).map((z) => z.id);
+    zonas.sort((a, b) => orden.indexOf(a.zona_id) - orden.indexOf(b.zona_id));
+    return { normativos: normativos.map(normativoDesdeFila), zonas: zonas.map(limiteZonaDesdeFila), criterios: criterios.map(criterioDesdeFila) };
+  }
+
+  async guardarCriterios(valores: Record<string, number | string>, usuario: string) {
+    const ahora = new Date().toISOString();
+    for (const [clave, valor] of Object.entries(valores)) {
+      verificar(await this.db.from("criterios_internos").update({ valor: String(valor), actualizado_en: ahora, actualizado_por: usuario }).eq("clave", clave));
+    }
   }
 }
 

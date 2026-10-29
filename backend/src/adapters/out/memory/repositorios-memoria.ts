@@ -4,9 +4,9 @@
  * Los datos se pierden al reiniciar el proceso.
  */
 import { randomUUID } from "node:crypto";
-import type { Alerta, CondicionDeAlerta, Dispositivo, Medicion, Plano, Turno, Umbrales, Variable, Zona } from "../../../domain/modelo";
+import type { Alerta, CondicionDeAlerta, ConfiguracionLimites, Dispositivo, Medicion, Plano, Turno, Umbrales, Variable, Zona } from "../../../domain/modelo";
 import type { AlertasRepositorio, CatalogoRepositorio, MedicionesRepositorio, PuntoAgregado } from "../../../application/ports/salida";
-import { catalogoJson, dispositivoDesdeFila, variableDesdeFila, zonaDesdeFila } from "../../../config/catalogo-inicial";
+import { catalogoJson, dispositivoDesdeFila, limitesJson, variableDesdeFila, zonaDesdeFila } from "../../../config/catalogo-inicial";
 
 export class CatalogoEnMemoria implements CatalogoRepositorio {
   private _zonas: Zona[] = catalogoJson.zonas().map(zonaDesdeFila);
@@ -29,6 +29,16 @@ export class CatalogoEnMemoria implements CatalogoRepositorio {
   async guardarUmbrales(clave: string, umbrales: Umbrales) {
     const v = this._variables.find((x) => x.clave === clave);
     if (v) v.umbrales = { ...umbrales };
+  }
+
+  private _limites: ConfiguracionLimites = limitesJson.configuracion();
+
+  async limitesConfiguracion() {
+    return JSON.parse(JSON.stringify(this._limites)) as ConfiguracionLimites;
+  }
+
+  async guardarCriterios(valores: Record<string, number | string>) {
+    for (const c of this._limites.criterios) if (c.clave in valores) c.valor = valores[c.clave];
   }
 }
 

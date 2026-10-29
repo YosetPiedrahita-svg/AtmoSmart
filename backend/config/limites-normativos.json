@@ -1,0 +1,138 @@
+[
+  {
+    "id": "o2",
+    "variable": "O₂ Oxígeno",
+    "limite": "No inferior a 19,5 ni superior a 23,5 % vol.",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 38",
+    "orden": 1
+  },
+  {
+    "id": "ch4-frente",
+    "variable": "CH₄ Metano — Frente de explotación o avance",
+    "limite": "Suspender labores y evacuar al alcanzar 1 % (20 % LEL)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 53",
+    "orden": 2
+  },
+  {
+    "id": "ch4-retorno-principal",
+    "variable": "CH₄ Metano — Retorno principal de aire",
+    "limite": "Suspender labores y evacuar al alcanzar 1 % (20 % LEL)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 53",
+    "orden": 3
+  },
+  {
+    "id": "ch4-retorno-tajo",
+    "variable": "CH₄ Metano — Retorno de aire de los tajos",
+    "limite": "Suspender labores y evacuar al alcanzar 1,5 % (30 % LEL)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 53",
+    "orden": 4
+  },
+  {
+    "id": "ch4-retorno-preparacion",
+    "variable": "CH₄ Metano — Retorno de frentes de preparación y desarrollo",
+    "limite": "Suspender labores y evacuar al alcanzar 1,5 % (30 % LEL)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 53",
+    "orden": 5
+  },
+  {
+    "id": "ch4-via-general",
+    "variable": "CH₄ Metano — Vía de entrada de aire, transporte o servicio",
+    "limite": "Suspender labores y evacuar al alcanzar 1 % (20 % LEL)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Criterio interno (sitio no listado en el Art. 53; se usa el valor más estricto)",
+    "orden": 6
+  },
+  {
+    "id": "ch4-salvamento",
+    "variable": "CH₄ Metano",
+    "limite": "Por encima de 2 %: solo personal de salvamento",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 53, par. 1",
+    "orden": 7
+  },
+  {
+    "id": "co",
+    "variable": "CO Monóxido de carbono",
+    "limite": "TWA 25 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 8
+  },
+  {
+    "id": "co2",
+    "variable": "CO₂ Dióxido de carbono",
+    "limite": "TWA 5.000 ppm · STEL 30.000 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 9
+  },
+  {
+    "id": "h2s",
+    "variable": "H₂S Ácido sulfhídrico",
+    "limite": "TWA 1 ppm · STEL 5 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 10
+  },
+  {
+    "id": "so2",
+    "variable": "SO₂ Dióxido de azufre",
+    "limite": "STEL 0,25 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 11
+  },
+  {
+    "id": "no",
+    "variable": "NO Óxido nítrico",
+    "limite": "TWA 25 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 12
+  },
+  {
+    "id": "no2",
+    "variable": "NO₂ Dióxido de nitrógeno",
+    "limite": "TWA 0,2 ppm",
+    "como_se_evalua": "Promedio de la jornada (TWA) y de 15 min (STEL). No es un umbral instantáneo de evacuación.",
+    "referencia": "Art. 39",
+    "orden": 13
+  },
+  {
+    "id": "te",
+    "variable": "Te Temperatura efectiva",
+    "limite": "28 °C: Sin limitaciones · 29 °C: 6 horas · 30 °C: 4 horas · 31 °C: 2 horas · 32 °C: 0 horas — solo cuadrillas de salvamento (Art. 218)",
+    "como_se_evalua": "Te = 0,7 · Th + 0,3 · Ts − V",
+    "referencia": "Arts. 217 y 218",
+    "orden": 14
+  },
+  {
+    "id": "air",
+    "variable": "V Velocidad del aire",
+    "limite": "Mínimo y máximo según el tipo de vía (ver Límites por zona)",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Art. 56",
+    "orden": 15
+  },
+  {
+    "id": "sensores",
+    "variable": "Sensores",
+    "limite": "Lectura ausente, inválida o con calibración vencida = “no disponible”, nunca estado seguro",
+    "como_se_evalua": "Calidad de la lectura",
+    "referencia": "Arts. 46, 51 y 52 · criterio de diseño",
+    "orden": 16
+  },
+  {
+    "id": "pm",
+    "variable": "Polvo de carbón",
+    "limite": "Precaución 0,5 · alarma 0,9 mg/m³",
+    "como_se_evalua": "Lectura instantánea",
+    "referencia": "Criterio interno (no incluido en Parámetros 1 y 2)",
+    "orden": 17
+  }
+]

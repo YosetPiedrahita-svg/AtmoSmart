@@ -43,7 +43,8 @@ npm run simular -- --escenario metano --velocidad 5
 
 1. Cree un proyecto en [supabase.com](https://supabase.com).
 2. En **SQL Editor**, ejecute en orden los archivos de [`supabase/migrations/`](../supabase/migrations):
-   `001_esquema.sql` y `002_funciones_agregadas.sql`.
+   `001_esquema.sql`, `002_funciones_agregadas.sql` y `003_limites_configuracion.sql` (tablas de la pantalla
+   "Límites y configuración": `limites_normativos`, `limites_zona` y `criterios_internos`).
 3. Copie `backend/.env.example` como `backend/.env` y complete `SUPABASE_URL` y
    `SUPABASE_SERVICE_ROLE_KEY` (en **Project Settings → API**).
    ⚠️ La clave de servicio da acceso total: **nunca** la suba al repositorio ni la ponga en el frontend.
@@ -160,3 +161,15 @@ predictiva → ventilador detenido → sensor sin señal → reconocimiento por 
 
 > ⚠️ Los límites de `config/variables.json` son **valores de referencia**. Ingeniería de Minas debe
 > validarlos contra el **Decreto 1886 de 2015** antes de cualquier uso real.
+
+## Límites y configuración, alertas y datos de prueba
+
+| Método y ruta | Qué hace |
+| --- | --- |
+| `GET /api/limites/configuracion` | Límites normativos (variable, límite, cómo se evalúa, referencia), límites por zona y criterios internos, leídos de Supabase |
+| `PUT /api/limites/criterios` | Guarda los criterios internos que cambió el equipo (`{ criterios: { jornadaHoras: 10 }, user }`) |
+| `POST /api/alertas/evaluar` | Reevalúa todas las zonas con los límites vigentes y genera / actualiza las alertas |
+| `POST /api/simulacion/generar` | Genera lecturas que provocan `ok`, `warn` o `crit` (`{ zoneId, variable, level }`); la alerta se crea por el flujo normal |
+
+`npm run db:seed` carga estas tablas desde `backend/config/limites-*.json` y `criterios-internos.json`
+(los criterios ya guardados no se pisan). `PERMITIR_SIMULACION=0` desactiva `/api/simulacion/generar`.

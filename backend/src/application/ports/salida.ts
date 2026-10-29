@@ -3,7 +3,7 @@
  * El núcleo solo conoce estas interfaces; los adaptadores (memoria, Supabase,
  * SSE...) las implementan. Cambiar de base de datos = cambiar de adaptador.
  */
-import type { Alerta, CondicionDeAlerta, Dispositivo, Medicion, Plano, Turno, Umbrales, Variable, Zona } from "../../domain/modelo";
+import type { Alerta, CondicionDeAlerta, ConfiguracionLimites, Dispositivo, Medicion, Plano, Turno, Umbrales, Variable, Zona } from "../../domain/modelo";
 
 export interface CatalogoRepositorio {
   zonas(): Promise<Zona[]>;
@@ -13,6 +13,9 @@ export interface CatalogoRepositorio {
   turno(): Promise<Turno>;
   actualizarDispositivo(id: string, cambios: { bateria?: number | null; ultimaComunicacion?: Date }): Promise<void>;
   guardarUmbrales(clave: string, umbrales: Umbrales, usuario: string): Promise<void>;
+  /** Límites normativos, límites por zona y criterios internos (pantalla "Límites y configuración"). */
+  limitesConfiguracion(): Promise<ConfiguracionLimites>;
+  guardarCriterios(valores: Record<string, number | string>, usuario: string): Promise<void>;
 }
 
 /** Punto agregado (promedio) de una serie temporal. */

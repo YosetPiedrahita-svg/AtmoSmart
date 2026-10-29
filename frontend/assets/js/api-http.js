@@ -118,6 +118,13 @@
     addManualReading: usar(
       (lectura) => pedir("POST", "/api/mediciones/manual", Object.assign({ user: AS.session.user().name }, lectura))),
     getShiftSummary: usar(() => get("/api/turno")),
+    /** Límites normativos, límites por zona y criterios internos guardados en la base de datos. */
+    getLimitsConfig: usar(() => get("/api/limites/configuracion")),
+    saveCriteria: usar((criterios) => pedir("PUT", "/api/limites/criterios", { criterios, user: AS.session.user().name })),
+    /** Genera lecturas que provocan un nivel (ok | warn | crit) en una variable de una zona. */
+    generateTestData: usar(({ zoneId, variable, level }) => pedir("POST", "/api/simulacion/generar", { zoneId, variable, level })),
+    /** Reevalúa todas las zonas con los límites vigentes. */
+    evaluateAlerts: usar(() => pedir("POST", "/api/alertas/evaluar")),
     /** Solo con backend: guarda los límites de una variable en el servidor. */
     saveLimits: (key, thresholds) => pedir("PUT", `/api/limites/${encodeURIComponent(key)}`, { thresholds, user: AS.session.user().name }),
     /** Notifica cambios en vivo (SSE). Devuelve una función para cancelar. */

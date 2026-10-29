@@ -10,7 +10,8 @@
 import { aUnidadCanonica, clasificarCalidad } from "../domain/calidad";
 import { evaluarZona, type ResultadoEvaluacion } from "../domain/reglas";
 import { evaluarValor, limiteSuperado, umbralesValidos } from "../domain/umbrales";
-import { TIPO, type Alerta, type CondicionDeAlerta, type Dispositivo, type Medicion, type Umbrales, type Variable, type Zona } from "../domain/modelo";
+import { NIVELES_PRUEBA, valorParaNivel, type NivelPrueba } from "../domain/dato-de-prueba";
+import { TIPO, type Alerta, type CondicionDeAlerta, type ConfiguracionLimites, type Dispositivo, type Medicion, type Umbrales, type Variable, type Zona } from "../domain/modelo";
 import type { GestionarAlertas, GestionarLimites, IngerirMediciones, MensajeCanonico, RegistrarLecturaManual, ResultadoIngesta } from "./ports/entrada";
 import type { AlertasRepositorio, CatalogoRepositorio, MedicionesRepositorio, Publicador, Reloj } from "./ports/salida";
 import { VentanaReciente } from "./ventana-reciente";
@@ -332,6 +333,80 @@ export class ServicioMonitoreo implements IngerirMediciones, RegistrarLecturaMan
     v.umbrales = { ...umbrales };
     for (const z of this.zonas) await this.evaluarYSincronizar(z.id);
     this.d.publicador.publicar({ tipo: "mediciones", zonas: this.zonas.map((z) => z.id) });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Límites y configuración, y datos de prueba
+  // ---------------------------------------------------------------------------
+
+  /** Límites normativos, límites por zona y criterios internos (guardados en la base de datos). */
+  limitesConfiguracion(): Promise<ConfiguracionLimites> {
+    return this.d.catalogo.limitesConfiguracion();
+  }
+
+  /** Guarda los criterios internos que cambió el equipo (no son límites legales). */
+  async guardarCriterios(valores: Record<string, unknown>, usuario: string): Promise<void> {
+    const actuales = new Map((await this.d.catalogo.limitesConfiguracion()).criterios.map((c) => [c.clave, c]));
+    const limpios: Record<string, number | string> = {};
+    for (const [clave, valor] of Object.entries(valores ?? {})) {
+      const actual = actuales.get(clave);
+      if (!actual) throw new ErrorDeDominio(`Criterio desconocido: ${clave}`);
+      if (typeof actual.valor === "number") {
+        const n = Number(valor);
+        if (valor === "" || valor == null || !Number.isFinite(n) || n < 0) throw new ErrorDeDominio(`Valor inválido en «${actual.etiqueta}»`);
+        limpios[clave] = n;
+      } else {
+        if (clave === "teRedondeo" && valor !== "arriba" && valor !== "cercano") throw new ErrorDeDominio("El redondeo debe ser «arriba» o «cercano»");
+        limpios[clave] = String(valor);
+      }
+    }
+    if (typeof limpios["jornadaHoras"] === "number" && (limpios["jornadaHoras"] < 1 || limpios["jornadaHoras"] > 24)) throw new ErrorDeDominio("La jornada debe estar entre 1 y 24 horas");
+    await this.d.catalogo.guardarCriterios(limpios, usuario?.trim() || "desconocido");
+    this.d.publicador.publicar({ tipo: "mediciones", zonas: this.zonas.map((z) => z.id) });
+  }
+
+  /**
+   * Genera lecturas que provocan un nivel (normal / precaución / alarma) en una variable de una zona,
+   * calculadas desde los límites vigentes, y las procesa como si las enviara el sensor de esa zona.
+   * Devuelve el resultado REAL de la evaluación (la alerta se crea por el flujo normal, no se inventa).
+   */
+  async generarDatosPrueba(cmd: { zonaId: string; variable: string; nivel: string }) {
+    const nivel = cmd.nivel as NivelPrueba;
+    if (!NIVELES_PRUEBA.includes(nivel)) throw new ErrorDeDominio("El nivel debe ser ok, warn o crit");
+    const zona = this.zonas.find((z) => z.id === cmd.zonaId);
+    if (!zona) throw new ErrorDeDominio("Zona desconocida", "no_encontrado");
+    const variable = this.variables.get(cmd.variable);
+    if (!variable || !variable.monitoreada) throw new ErrorDeDominio("Variable desconocida o sin límites", "no_encontrado");
+    const valor = valorParaNivel(variable, nivel);
+    if (valor == null) throw new ErrorDeDominio(`«${variable.nombre}» no tiene límites para generar ese nivel`);
+    const sensor = this.listarDispositivos().find((d) => d.zonaId === zona.id && d.variables.includes(variable.clave) && !d.tipo.includes("portátil"));
+    if (!sensor) throw new ErrorDeDominio(`La zona «${zona.nombre}» no tiene un sensor de ${variable.nombre}`, "no_encontrado");
+
+    // Tres lecturas en 20 s: así la evaluación y la histéresis las toman como una condición sostenida.
+    const ahora = this.d.reloj.ahora();
+    const mensajes: MensajeCanonico[] = [20, 10, 0].map((s) => ({
+      dispositivoId: sensor.id, zonaId: zona.id, instante: new Date(ahora.getTime() - s * 1000).toISOString(), origen: "simulado", lecturas: [{ variable: variable.clave, valor }],
+    }));
+    // Una variable que no es un gas (aire, polvo, temperatura...) no da "señal" a la zona: sin ella la zona
+    // quedaría en «sin señal» y no se generarían alertas. Se acompaña con O₂ normal del sensor de gas de la zona.
+    if (!GASES.includes(variable.clave) && this.zonaSinSenal(zona.id, ahora)) {
+      const o2 = this.variables.get("o2");
+      const sensorGas = this.listarDispositivos().find((d) => d.zonaId === zona.id && d.variables.includes("o2") && !d.tipo.includes("portátil"));
+      const normal = o2 ? valorParaNivel(o2, "ok") : null;
+      if (sensorGas && normal != null) mensajes.push({ dispositivoId: sensorGas.id, zonaId: zona.id, instante: ahora.toISOString(), origen: "simulado", lecturas: [{ variable: "o2", valor: normal }] });
+    }
+    const r = await this.ingerir(mensajes);
+    const e = this.estadoZona(zona.id);
+    return {
+      zonaId: zona.id, zona: zona.nombre, variable: variable.clave, nombre: variable.nombre, unidad: variable.unidad, nivel, valor, sensor: sensor.id,
+      aceptadas: r.aceptadas, estadoVariable: e?.resultado?.estados[variable.clave] ?? null, estadoZona: e?.resultado?.estadoZona ?? null,
+    };
+  }
+
+  /** Vuelve a evaluar todas las zonas y genera / actualiza las alertas con los límites vigentes. */
+  async evaluarAhora(): Promise<{ zonas: number; alertasActivas: number }> {
+    await this.vigilar();
+    return { zonas: this.zonas.length, alertasActivas: (await this.d.alertas.activas()).length };
   }
 
   // ---------------------------------------------------------------------------
