@@ -23,6 +23,9 @@ export interface Escenario {
 const sube = (ritmo: number, max: number, min: number) => Math.min(ritmo * min, max);
 const decae = (pico: number, constanteMin: number, min: number) => pico * Math.exp(-min / constanteMin);
 
+/** Sensores de gas fijos: uno por cada gas (O₂, CH₄, CO, CO₂, H₂S, NO₂). */
+export const esSensorDeGas = (tipo: string) => /^Sensor de (oxígeno|metano|monóxido|dióxido|sulfuro)/.test(tipo);
+
 export const ESCENARIOS: Escenario[] = [
   {
     id: "normal",
@@ -49,8 +52,8 @@ export const ESCENARIOS: Escenario[] = [
     id: "sin-senal",
     tecla: "4",
     nombre: "Detector sin señal",
-    descripcion: "El detector multigas fijo deja de transmitir: la zona debe pasar a 'sin señal', nunca a 'normal'.",
-    silenciar: (tipo) => tipo === "Detector multigas fijo",
+    descripcion: "Los sensores de gas fijos de la zona dejan de transmitir: la zona debe pasar a 'sin señal', nunca a 'normal'.",
+    silenciar: (tipo) => esSensorDeGas(tipo),
   },
   {
     id: "voladura",

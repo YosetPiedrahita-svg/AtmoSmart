@@ -12,6 +12,8 @@
  *   --intervalo  segundos entre envíos           (por defecto 5)
  *   --velocidad  acelera el escenario (5 = cinco veces más rápido; útil para el pitch)
  *   --token      valor de x-api-key si el backend define INGESTA_TOKEN
+ *   --apagar     sensores que no transmiten, separados por coma (p. ej. --apagar CH4-F2-01,CO-F2-01):
+ *                sirve para mostrar la falla de UN solo sensor de gas
  *   --rotar      minutos por escenario: recorre solos normal → metano → voladura → ventilador →
  *                sin-señal → polvo, con operación normal entre cada uno (modo "siempre en vivo")
  *
@@ -19,8 +21,9 @@
  */
 import readline from "node:readline";
 import { ClienteBackend, argumentos, simulables, type MensajeCanonico } from "./cliente";
-import { ESCENARIOS, escenarioPorId, escenarioPorTecla } from "./escenarios";
+import { ESCENARIOS, escenarioPorId, escenarioPorTecla, esSensorDeGas } from "./escenarios";
 import { generarValor, type EscenarioActivo } from "./generador";
+import { RUIDO, DECIMALES } from "./perfiles";
 
 const args = argumentos();
 const url = (args.url ?? process.env.BACKEND_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -52,8 +55,25 @@ function cambiar(id: string) {
   console.log(`\n▶ Escenario: ${e.nombre} en ${activo.zonaId} — ${e.descripcion}\n`);
 }
 
+const GASES: Record<string, string> = { o2: "O₂", ch4: "CH₄", co: "CO", co2: "CO₂", h2s: "H₂S", no2: "NO₂" };
+const apagados = new Set((args.apagar ?? "").split(",").map((x) => x.trim()).filter(Boolean));
+
+/** Pequeño error propio de cada sensor (calibración distinta): dos sensores del mismo gas no leen idéntico. */
+const sesgo = (id: string, variable: string) => {
+  const h = [...id + variable].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 2003, 7);
+  return ((h / 1001) - 1) * 0.6 * (RUIDO[variable] ?? 0);
+};
+
 async function main() {
-  const dispositivos = simulables(await cliente.dispositivos());
+  const todos = simulables(await cliente.dispositivos());
+  const dispositivos = todos.filter((d) => !apagados.has(d.id));
+  const sensoresGas = todos.filter((d) => esSensorDeGas(d.type));
+  console.log("Sensores de gas (uno por cada gas):");
+  for (const [clave, simbolo] of Object.entries(GASES)) {
+    const ids = sensoresGas.filter((d) => d.vars.length === 1 && d.vars[0] === clave).map((d) => d.id);
+    console.log(`  ${simbolo.padEnd(4)} ${String(ids.length).padStart(2)} sensores  ${ids.join(", ")}`);
+  }
+  if (apagados.size) console.log(`  Sin transmitir (--apagar): ${[...apagados].join(", ")}`);
   console.log(`Simulando ${dispositivos.length} equipos → ${url}/api/ingesta cada ${intervalo}s (velocidad ×${velocidad})`);
   console.log("Teclas: " + ESCENARIOS.map((e) => `${e.tecla}=${e.id}`).join("  ") + "  q=salir");
   cambiar(activo.escenario.id);
@@ -77,7 +97,12 @@ async function main() {
         instante: new Date(ahora).toISOString(),
         origen: "simulado",
         bateria: d.type.includes("Contacto") || d.type.includes("lámparas") ? undefined : bateria(d.id),
-        lecturas: d.vars.map((variable) => ({ variable, valor: generarValor(d.zoneId, variable, ahora, activo) })),
+        lecturas: d.vars.map((variable) => {
+          const bruto = generarValor(d.zoneId, variable, ahora, activo);
+          if (variable === "ventilador" || variable === "personas") return { variable, valor: bruto };
+          const dec = DECIMALES[variable] ?? 2;
+          return { variable, valor: Math.round(Math.max(0, bruto + sesgo(d.id, variable)) * 10 ** dec) / 10 ** dec };
+        }),
       }));
     try {
       const r = await cliente.enviar(mensajes);

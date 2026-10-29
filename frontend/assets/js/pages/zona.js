@@ -79,7 +79,7 @@
       AS.qs("[data-offline]").innerHTML = r.offline
         ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("wifiOff", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Zona sin monitoreo</div><div class="banner-text">El detector fijo no reporta desde ${AS.fmt.time(r.ts)}. Mida con detector portátil y use “Registro manual” mientras se restablece.</div></div></div>`
         : r.calibrationExpired
-          ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("alert", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Gases sin lectura válida</div><div class="banner-text">El detector multigas tiene la calibración vencida hace ${r.calibrationExpired} días. Sus lecturas se muestran como “no disponible”, nunca como seguras. Mida con detector portátil calibrado y use “Registro manual”.</div></div></div>`
+          ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("alert", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Gases sin lectura válida</div><div class="banner-text">Un sensor de gas tiene la calibración vencida hace ${r.calibrationExpired} días. Sus lecturas se muestran como “no disponible”, nunca como seguras. Mida con detector portátil calibrado y use “Registro manual”.</div></div></div>`
           : "";
 
       const tiles = AS.qs("[data-tiles]");

@@ -27,6 +27,10 @@ const lectura = (dispositivoId: string, lecturas: Record<string, number>) => ({
   lecturas: Object.entries(lecturas).map(([variable, valor]) => ({ variable, valor })),
 });
 
+/** Un mensaje por sensor: cada gas tiene su propio equipo (p. ej. CH4-F2-01). */
+const gases = (sufijo: string, valores: Record<string, number>) =>
+  Object.entries(valores).map(([variable, valor]) => lectura(`${variable.toUpperCase()}-${sufijo}-01`, { [variable]: valor }));
+
 let servidor: Server;
 let base = "";
 
@@ -47,7 +51,7 @@ describe("flujo del frente de explotación", () => {
   it("metano en ascenso genera alerta predictiva y luego de umbral", async () => {
     for (let i = 0; i <= 10; i++) {
       await servicio.ingerir([
-        lectura("MG-F2-01", { o2: 20.8, ch4: 0.3 + 0.05 * i, co: 5 + (i % 2), co2: 0.2, h2s: 0.1, no2: 0.05 }),
+        ...gases("F2", { o2: 20.8, ch4: 0.3 + 0.05 * i, co: 5 + (i % 2), co2: 0.2, h2s: 0.1, no2: 0.05 }),
         lectura("VA-F2-01", { ventilador: 1 }),
         lectura("LAM-F2", { personas: 7 }),
       ]);
@@ -60,18 +64,18 @@ describe("flujo del frente de explotación", () => {
   });
 
   it("ventilador auxiliar detenido con personal → alarma", async () => {
-    await servicio.ingerir([lectura("VA-F2-01", { ventilador: 0 }), lectura("MG-F2-01", { o2: 20.8, ch4: 0.8, co: 5 })]);
+    await servicio.ingerir([lectura("VA-F2-01", { ventilador: 0 }), ...gases("F2", { o2: 20.8, ch4: 0.8, co: 5 })]);
     const alerta = (await servicio.alertas()).find((a) => a.clave === "ventilacion:frente-2:ventilador");
     expect(alerta?.severidad).toBe("crit");
     expect(alerta?.titulo).toMatch(/7 persona/);
     expect(eventos.some((e) => e.tipo === "alerta" && e.accion === "creada")).toBe(true);
   });
 
-  it("si el detector deja de reportar, la zona queda sin señal y se alerta", async () => {
+  it("si los sensores dejan de reportar, la zona queda sin señal y se alerta", async () => {
     avanzar(90);
     await servicio.vigilar();
     expect(servicio.estadoZona("frente-2")!.resultado!.estadoZona).toBe("off");
-    const sinSenal = (await servicio.alertas()).find((a) => a.clave === "sensor:MG-F2-01");
+    const sinSenal = (await servicio.alertas()).find((a) => a.clave === "sensor:CH4-F2-01");
     expect(sinSenal?.activa).toBe(true);
   });
 
@@ -90,7 +94,7 @@ describe("flujo del frente de explotación", () => {
   });
 
   it("acepta ingesta por HTTP y valida errores", async () => {
-    const ok = await fetch(`${base}/ingesta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lectura("MG-F1-01", { ch4: 0.2, o2: 20.9, co: 4 })) });
+    const ok = await fetch(`${base}/ingesta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(gases("F1", { ch4: 0.2, o2: 20.9, co: 4 })) });
     expect((await ok.json()).aceptadas).toBe(3);
     const mal = await fetch(`${base}/limites/ch4`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ thresholds: { highWarn: 2, highCrit: 1 } }) });
     expect(mal.status).toBe(400);

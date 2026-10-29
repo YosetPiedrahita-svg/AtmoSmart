@@ -9,19 +9,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-BOC-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-BOC-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "bocamina",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "CH4-BOC-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "bocamina",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "CO-BOC-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "bocamina",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "CO2-BOC-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "bocamina",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "H2S-BOC-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "bocamina",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "NO2-BOC-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "bocamina",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-11-08"
   },
   {
@@ -48,19 +98,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-G1-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-G1-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "galeria-1",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "CH4-G1-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "galeria-1",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "CO-G1-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "galeria-1",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "CO2-G1-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "galeria-1",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "H2S-G1-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "galeria-1",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "NO2-G1-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "galeria-1",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-11-17"
   },
   {
@@ -98,19 +198,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-F1-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-F1-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "frente-1",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "CH4-F1-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "frente-1",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "CO-F1-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "frente-1",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "CO2-F1-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "frente-1",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "H2S-F1-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "frente-1",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "NO2-F1-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "frente-1",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-11-26"
   },
   {
@@ -170,19 +320,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-INC-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-INC-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "inclinado",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "CH4-INC-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "inclinado",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "CO-INC-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "inclinado",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "CO2-INC-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "inclinado",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "H2S-INC-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "inclinado",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "NO2-INC-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "inclinado",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-10-26"
   },
   {
@@ -220,19 +420,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-G2-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-G2-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "galeria-2",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "CH4-G2-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "galeria-2",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "CO-G2-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "galeria-2",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "CO2-G2-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "galeria-2",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "H2S-G2-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "galeria-2",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "NO2-G2-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "galeria-2",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-12-14"
   },
   {
@@ -270,19 +520,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-F2-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-F2-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "frente-2",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "CH4-F2-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "frente-2",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "CO-F2-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "frente-2",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "CO2-F2-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "frente-2",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "H2S-F2-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "frente-2",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "NO2-F2-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "frente-2",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2026-12-23"
   },
   {
@@ -342,19 +642,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-BOM-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-BOM-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "bombeo",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "CH4-BOM-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "bombeo",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "CO-BOM-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "bombeo",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "CO2-BOM-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "bombeo",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "H2S-BOM-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "bombeo",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "NO2-BOM-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "bombeo",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2027-01-01"
   },
   {
@@ -392,19 +742,69 @@
     "calibracion_vence": null
   },
   {
-    "id": "MG-RET-01",
-    "tipo": "Detector multigas fijo",
+    "id": "O2-RET-01",
+    "tipo": "Sensor de oxígeno (O₂)",
     "zona_id": "retorno",
     "variables": [
-      "o2",
-      "ch4",
-      "co",
-      "co2",
-      "h2s",
+      "o2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-o2",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "CH4-RET-01",
+    "tipo": "Sensor de metano (CH₄)",
+    "zona_id": "retorno",
+    "variables": [
+      "ch4"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-ch4",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "CO-RET-01",
+    "tipo": "Sensor de monóxido de carbono (CO)",
+    "zona_id": "retorno",
+    "variables": [
+      "co"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "CO2-RET-01",
+    "tipo": "Sensor de dióxido de carbono (CO₂)",
+    "zona_id": "retorno",
+    "variables": [
+      "co2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-co2",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "H2S-RET-01",
+    "tipo": "Sensor de sulfuro de hidrógeno (H₂S)",
+    "zona_id": "retorno",
+    "variables": [
+      "h2s"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "gas-h2s",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "NO2-RET-01",
+    "tipo": "Sensor de dióxido de nitrógeno (NO₂)",
+    "zona_id": "retorno",
+    "variables": [
       "no2"
     ],
     "alimentacion": "Red + batería respaldo",
-    "perfil": "multigas-generico",
+    "perfil": "gas-no2",
     "calibracion_vence": "2027-01-10"
   },
   {

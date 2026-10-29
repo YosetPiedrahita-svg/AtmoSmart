@@ -42,6 +42,18 @@ Mientras corre, presione **1–6** para cambiar de escenario y **q** para salir.
 | 5 | `voladura` | Pico de CO, NO₂ y polvo que decae con la ventilación |
 | 6 | `polvo` | Polvo de carbón respirable en aumento |
 
+### Un sensor por cada gas
+
+Cada gas tiene su propio equipo en cada zona (sin detector multigas): `O2-…`, `CH4-…`, `CO-…`, `CO2-…`,
+`H2S-…` y `NO2-…`, seguidos de la zona (`BOC`, `G1`, `F1`, `INC`, `G2`, `F2`, `BOM`, `RET`) y `-01`.
+Por ejemplo, el metano del Frente 2 es `CH4-F2-01`. Son 8 zonas × 6 gases = 48 sensores de gas, además de
+temperatura/humedad, anemómetros, polvo, ventilador y lámparas. Cada sensor envía su propio mensaje, con su
+propia batería y un pequeño error de calibración, así que dos sensores del mismo gas no leen idéntico.
+
+- `npm run simular -- --apagar CH4-F2-01` deja sin señal solo ese sensor: la zona lo reporta y se genera la alerta del equipo.
+- El escenario `sin-senal` silencia todos los sensores de gas de la zona.
+- Al arrancar, el simulador lista los sensores que encontró por gas.
+
 ### Siempre en vivo (sin dejar un computador encendido)
 
 `npm run simular -- --rotar 3` recorre solo los escenarios (3 min cada uno, con operación normal entre ellos).
@@ -60,6 +72,7 @@ para producción se quita `SIMULADOR`.
 | `--intervalo` | `5` | Segundos entre envíos |
 | `--velocidad` | `1` | Acelera el escenario (`5` = 5 veces más rápido; útil en el pitch) |
 | `--token` | — | Valor de `x-api-key` si el backend define `INGESTA_TOKEN` |
+| `--apagar` | — | Sensores que no transmiten, separados por coma (p. ej. `CH4-F2-01,CO-F2-01`): muestra la falla de un solo sensor |
 | `--horas` / `--paso` | `6` / `1` | Solo para `historico`: horas hacia atrás y minutos entre lecturas |
 
 > El backend necesita **al menos 3 minutos de datos** para afirmar que una variable sube o baja.

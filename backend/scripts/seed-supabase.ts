@@ -27,6 +27,18 @@ const plano = catalogoJson.plano();
 await upsert("zonas", catalogoJson.zonas(), "id");
 await upsert("variables", catalogoJson.variables(), "clave");
 await upsert("dispositivos", catalogoJson.dispositivos().map((d) => ({ ...d, portador: d.portador ?? null })), "id");
+// Retira los equipos que ya no están en el catálogo (p. ej. el antiguo detector multigas, ahora un sensor por gas).
+{
+  const vigentes = new Set(catalogoJson.dispositivos().map((d) => d.id));
+  const { data, error } = await db.from("dispositivos").select("id");
+  if (error) throw new Error(`dispositivos: ${error.message}`);
+  const sobrantes = (data ?? []).map((r: { id: string }) => r.id).filter((id: string) => !vigentes.has(id));
+  if (sobrantes.length) {
+    const { error: e2 } = await db.from("dispositivos").delete().in("id", sobrantes);
+    if (e2) throw new Error(`dispositivos: ${e2.message}`);
+    console.log(`✔ dispositivos retirados (ya no están en el catálogo): ${sobrantes.join(", ")}`);
+  }
+}
 // Un solo plano vigente: se desmarcan los anteriores antes de publicar este.
 {
   const { error } = await db.from("planos").update({ vigente: false }).neq("version", plano.version);
