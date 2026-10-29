@@ -123,7 +123,8 @@ export class ServicioMonitoreo implements IngerirMediciones, RegistrarLecturaMan
           calidad: clasificarCalidad({ valor, variable, origen, dispositivo: disp, ahora, recientes: this.ventana.recientesDispositivo(disp.id, l.variable) }),
         };
         aceptadas.push(m);
-        if (enVivo) this.ventana.agregar(m);
+        // Lo histórico reciente (≤ 30 min) también da contexto para las tendencias.
+        if (enVivo || ahora.getTime() - instante.getTime() <= 30 * 60_000) this.ventana.agregar(m);
         zonasAfectadas.add(zonaId);
       }
 
