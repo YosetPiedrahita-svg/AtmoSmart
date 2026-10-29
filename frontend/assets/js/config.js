@@ -10,6 +10,14 @@
 window.AS = window.AS || {};
 
 /**
+ * Dirección del backend (el que guarda todo en Supabase).
+ * Vacío = el mismo dominio que sirve esta página (cuando el backend sirve el frontend).
+ * Si el frontend está en otro dominio (p. ej. Vercel), escriba aquí la URL pública del
+ * backend, sin "/" final: "https://atmosmart-backend.onrender.com".
+ */
+AS.BACKEND_URL = "";
+
+/**
  * Variables monitoreadas.
  *
  * Los umbrales NO se leen de aquí directamente: AS.getThresholds(key, zoneId)

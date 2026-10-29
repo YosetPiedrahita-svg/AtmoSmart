@@ -254,7 +254,7 @@
     const updateFuente = () => {
       const modos = {
         backend: ["Backend · datos de sensores", false, `Conectado a ${AS.backendUrl}`],
-        "backend-caido": ["Backend sin respuesta · reintentando", true, `No hay conexión en vivo con ${AS.backendUrl}`],
+        "backend-caido": ["Sin conexión con el servidor · reintentando", true, `No hay conexión en vivo con ${AS.backendUrl}`],
         mock: ["Modo demo · datos locales", true, "Sin backend: se usan datos simulados en el navegador"],
         conectando: ["Conectando…", false, ""],
       };

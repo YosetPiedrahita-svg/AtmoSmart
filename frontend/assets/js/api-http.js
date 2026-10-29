@@ -2,14 +2,13 @@
    AtmoSmart — Adaptador HTTP hacia el backend.
 
    Expone la MISMA interfaz que mock-api.js (AS.api), así las páginas no
-   cambian. Al cargar intenta conectarse al backend:
-     - si responde → usa el backend (datos del simulador / sensores reales,
-       límites del servidor y actualizaciones en vivo por SSE);
-     - si no responde → sigue con mock-api.js como respaldo (modo demo).
+   cambian. Los datos vienen SIEMPRE del backend (Supabase). Si el backend no
+   responde, no se inventan datos: se muestra "Sin conexión con el servidor" y
+   se reintenta cada 3 s hasta que vuelva.
 
-   Forzar un modo:   ?datos=backend   ?datos=mock   ?datos=auto (por defecto)
-   Otra dirección:   ?backend=http://192.168.1.20:3000
-   (ambas preferencias se recuerdan en este navegador)
+   Dirección del backend: AS.BACKEND_URL (config.js) o ?backend=https://...
+   Solo para desarrollo sin servidor: ?datos=mock (se recuerda en el navegador;
+   ?datos=backend lo desactiva).
    ========================================================================== */
 
 (function () {
@@ -18,9 +17,9 @@
   if (params.get("datos")) AS.storage.set("datos", params.get("datos"));
   if (params.get("backend")) AS.storage.set("backendUrl", params.get("backend"));
 
-  const preferencia = AS.storage.get("datos", "auto");
+  const preferencia = AS.storage.get("datos", "backend");
   const servidoPorBackend = location.protocol === "http:" || location.protocol === "https:";
-  const BASE = String(AS.storage.get("backendUrl", null) || (servidoPorBackend ? location.origin : "http://localhost:3000")).replace(/\/$/, "");
+  const BASE = String(AS.storage.get("backendUrl", null) || AS.BACKEND_URL || (servidoPorBackend ? location.origin : "http://localhost:3000")).replace(/\/$/, "");
 
   AS.dataMode = "conectando";
   AS.backendUrl = BASE;
@@ -53,35 +52,37 @@
     es.onopen = () => { if (AS.dataMode === "backend-caido") { AS.dataMode = "backend"; avisarModo(); } };
   }
 
-  /** Conecta con el backend y adopta sus límites. Resuelve true si hay backend. */
+  /** Conecta con el backend y adopta sus límites. Reintenta hasta lograrlo; resuelve true cuando hay backend. */
   const listo = (async () => {
     if (preferencia === "mock") {
       AS.dataMode = "mock";
       avisarModo();
       return false;
     }
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 2500);
-      const r = await fetch(BASE + "/api/config", { signal: ctrl.signal });
-      clearTimeout(t);
-      if (!r.ok) throw new Error(String(r.status));
-      const cfg = await r.json();
-      // Los límites vigentes son los del servidor (no los guardados en el navegador).
-      cfg.variables.forEach((v) => {
-        const local = AS.getVariable(v.key);
-        if (local) local.thresholds = Object.assign({}, v.thresholds);
-      });
-      AS.getThresholds = (key) => Object.assign({}, (AS.getVariable(key) || { thresholds: {} }).thresholds);
-      AS.dataMode = "backend";
-      abrirEventos();
-      return true;
-    } catch (e) {
-      console.warn(`[AtmoSmart] Backend no disponible en ${BASE}; se usan datos simulados locales.`, e);
-      AS.dataMode = "mock";
-      return false;
-    } finally {
-      avisarModo();
+    for (;;) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 4000);
+        const r = await fetch(BASE + "/api/config", { signal: ctrl.signal });
+        clearTimeout(t);
+        if (!r.ok) throw new Error(String(r.status));
+        const cfg = await r.json();
+        // Los límites vigentes son los del servidor (no los guardados en el navegador).
+        cfg.variables.forEach((v) => {
+          const local = AS.getVariable(v.key);
+          if (local) local.thresholds = Object.assign({}, v.thresholds);
+        });
+        AS.getThresholds = (key) => Object.assign({}, (AS.getVariable(key) || { thresholds: {} }).thresholds);
+        AS.dataMode = "backend";
+        avisarModo();
+        abrirEventos();
+        return true;
+      } catch (e) {
+        console.warn(`[AtmoSmart] Sin respuesta del backend en ${BASE}; reintentando…`, e);
+        AS.dataMode = "backend-caido";
+        avisarModo();
+        await new Promise((ok) => setTimeout(ok, 3000));
+      }
     }
   })();
 
