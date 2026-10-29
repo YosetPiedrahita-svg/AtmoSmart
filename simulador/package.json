@@ -1,0 +1,12 @@
+{
+  "name": "@atmosmart/simulador",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Simulador de sensores de AtmoSmart: genera lecturas y las envía al backend como lo haría un gateway real",
+  "scripts": {
+    "simular": "tsx src/simular.ts",
+    "historico": "tsx src/historico.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}

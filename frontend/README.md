@@ -114,12 +114,27 @@ cada uno con su propio carácter (se prueban en **Límites y configuración → 
 
 ## Integración con el backend
 
-Cada método de `AS.api` indica en un comentario el endpoint sugerido
-(por ejemplo, `GET /api/zonas/estado` o `POST /api/alertas/:id/reconocer`).
-Para conectarlo basta con reemplazar el cuerpo de esas funciones por llamadas
-`fetch` que devuelvan los mismos objetos.
+`assets/js/api-http.js` expone la **misma interfaz** que `mock-api.js` (`AS.api`), pero resuelve
+cada llamada contra el backend. Al cargar la página, intenta conectarse:
 
-Escenarios incluidos en la simulación para la demo:
+- **Si el backend responde:** usa sus datos y límites, y se refresca en vivo con los eventos SSE
+  (`/api/stream`). La barra superior muestra "Backend · datos de sensores".
+- **Si no responde:** sigue con `mock-api.js` y muestra "Modo demo · datos locales".
+
+La forma más simple de usarlo es abrir <http://localhost:3000> con el backend encendido, porque
+el backend sirve esta carpeta. También funciona abriendo los HTML directamente: en ese caso
+busca el backend en `http://localhost:3000`.
+
+| Parámetro de URL | Efecto (se recuerda en el navegador) |
+| --- | --- |
+| `?datos=backend` / `?datos=mock` / `?datos=auto` | Fuerza la fuente de datos |
+| `?backend=http://IP:3000` | Usa un backend en otra dirección |
+
+Con backend conectado, la página de **Límites** guarda los cambios en el servidor, con historial
+de quién los cambió.
+
+Los escenarios del modo demo sin backend son estos (con backend, los escenarios los controla el
+`simulador/`):
 
 - **Frente 2**: metano en ascenso sostenido, que dispara una alerta predictiva con el tiempo estimado hasta la alarma.
 - **Frente 1**: temperatura efectiva sobre 28 °C, con tiempo de permanencia limitado (Art. 217).

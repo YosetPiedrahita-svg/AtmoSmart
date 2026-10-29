@@ -1,0 +1,66 @@
+[
+  {
+    "id": "bocamina",
+    "nombre": "Bocamina",
+    "nivel": "Superficie",
+    "tipo": "Acceso / entrada de aire",
+    "tipo_labor": "acceso",
+    "orden": 0
+  },
+  {
+    "id": "galeria-1",
+    "nombre": "Galería principal N1",
+    "nivel": "Nivel 1",
+    "tipo": "Transporte",
+    "tipo_labor": "galeria_entrada",
+    "orden": 1
+  },
+  {
+    "id": "frente-1",
+    "nombre": "Frente de explotación 1",
+    "nivel": "Nivel 1",
+    "tipo": "Frente activo (labor ciega)",
+    "tipo_labor": "frente_ciego",
+    "orden": 2
+  },
+  {
+    "id": "inclinado",
+    "nombre": "Inclinado / tambor",
+    "nivel": "N1 → N2",
+    "tipo": "Comunicación entre niveles",
+    "tipo_labor": "galeria_entrada",
+    "orden": 3
+  },
+  {
+    "id": "galeria-2",
+    "nombre": "Galería N2",
+    "nivel": "Nivel 2",
+    "tipo": "Transporte",
+    "tipo_labor": "galeria_entrada",
+    "orden": 4
+  },
+  {
+    "id": "frente-2",
+    "nombre": "Frente de explotación 2",
+    "nivel": "Nivel 2",
+    "tipo": "Frente activo (labor ciega)",
+    "tipo_labor": "frente_ciego",
+    "orden": 5
+  },
+  {
+    "id": "bombeo",
+    "nombre": "Estación de bombeo",
+    "nivel": "Nivel 2",
+    "tipo": "Servicios",
+    "tipo_labor": "servicio",
+    "orden": 6
+  },
+  {
+    "id": "retorno",
+    "nombre": "Chimenea de retorno",
+    "nivel": "N2 → Sup.",
+    "tipo": "Salida de aire viciado / ventilador principal",
+    "tipo_labor": "chimenea",
+    "orden": 7
+  }
+]

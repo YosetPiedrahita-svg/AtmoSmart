@@ -1,0 +1,150 @@
+{
+  "version": 3,
+  "updatedAt": "2026-10-27",
+  "source": "Plano de ventilación — Topografía",
+  "levels": [
+    {
+      "name": "Superficie",
+      "y": 30
+    },
+    {
+      "name": "Nivel 1",
+      "y": 160
+    },
+    {
+      "name": "Nivel 2",
+      "y": 340
+    }
+  ],
+  "nodes": [
+    {
+      "id": "n-bocamina",
+      "zoneId": "bocamina",
+      "x": 90,
+      "y": 70,
+      "label": "below"
+    },
+    {
+      "id": "n-g1",
+      "zoneId": "galeria-1",
+      "x": 250,
+      "y": 150,
+      "label": "above"
+    },
+    {
+      "id": "n-f1",
+      "zoneId": "frente-1",
+      "x": 470,
+      "y": 150,
+      "label": "above"
+    },
+    {
+      "id": "n-incl",
+      "zoneId": "inclinado",
+      "x": 330,
+      "y": 245,
+      "label": "right"
+    },
+    {
+      "id": "n-g2",
+      "zoneId": "galeria-2",
+      "x": 420,
+      "y": 330,
+      "label": "above"
+    },
+    {
+      "id": "n-f2",
+      "zoneId": "frente-2",
+      "x": 560,
+      "y": 400,
+      "label": "right"
+    },
+    {
+      "id": "n-bombeo",
+      "zoneId": "bombeo",
+      "x": 220,
+      "y": 350,
+      "label": "above"
+    },
+    {
+      "id": "n-ret-n2",
+      "name": "Galería de retorno N2",
+      "x": 720,
+      "y": 330,
+      "label": "above"
+    },
+    {
+      "id": "n-chimenea",
+      "zoneId": "retorno",
+      "x": 720,
+      "y": 70,
+      "label": "below"
+    }
+  ],
+  "segments": [
+    {
+      "from": "n-bocamina",
+      "to": "n-g1",
+      "kind": "intake"
+    },
+    {
+      "from": "n-g1",
+      "to": "n-incl",
+      "kind": "intake"
+    },
+    {
+      "from": "n-incl",
+      "to": "n-g2",
+      "kind": "intake"
+    },
+    {
+      "from": "n-g1",
+      "to": "n-f1",
+      "kind": "heading"
+    },
+    {
+      "from": "n-g2",
+      "to": "n-f2",
+      "kind": "heading"
+    },
+    {
+      "from": "n-g2",
+      "to": "n-bombeo",
+      "kind": "service"
+    },
+    {
+      "from": "n-g2",
+      "to": "n-ret-n2",
+      "kind": "return"
+    },
+    {
+      "from": "n-ret-n2",
+      "to": "n-chimenea",
+      "kind": "return"
+    }
+  ],
+  "fans": [
+    {
+      "id": "VP-01",
+      "kind": "main",
+      "node": "n-chimenea",
+      "label": "Ventilador principal (extractor)"
+    },
+    {
+      "id": "VA-01",
+      "kind": "auxiliary",
+      "segment": [
+        "n-g1",
+        "n-f1"
+      ]
+    },
+    {
+      "id": "VA-02",
+      "kind": "auxiliary",
+      "segment": [
+        "n-g2",
+        "n-f2"
+      ]
+    }
+  ]
+}

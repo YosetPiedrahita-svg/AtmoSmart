@@ -1,0 +1,504 @@
+[
+  {
+    "id": "GW-SUP-01",
+    "tipo": "Gateway de superficie",
+    "zona_id": "bocamina",
+    "variables": [],
+    "alimentacion": "Red eléctrica + UPS",
+    "perfil": "gateway",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-BOC-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "bocamina",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-11-08"
+  },
+  {
+    "id": "TH-BOC-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "bocamina",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2026-12-08"
+  },
+  {
+    "id": "LAM-BOC",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "bocamina",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-G1-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "galeria-1",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-11-17"
+  },
+  {
+    "id": "TH-G1-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "galeria-1",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2026-12-21"
+  },
+  {
+    "id": "AN-G1-01",
+    "tipo": "Anemómetro",
+    "zona_id": "galeria-1",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2026-12-15"
+  },
+  {
+    "id": "LAM-G1",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "galeria-1",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-F1-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "frente-1",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-11-26"
+  },
+  {
+    "id": "TH-F1-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "frente-1",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-01-03"
+  },
+  {
+    "id": "AN-F1-01",
+    "tipo": "Anemómetro",
+    "zona_id": "frente-1",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "PM-F1-01",
+    "tipo": "Monitor de polvo respirable",
+    "zona_id": "frente-1",
+    "variables": [
+      "pm"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "polvo-generico",
+    "calibracion_vence": "2026-11-11"
+  },
+  {
+    "id": "VA-F1-01",
+    "tipo": "Contacto de marcha ventilador auxiliar",
+    "zona_id": "frente-1",
+    "variables": [
+      "ventilador"
+    ],
+    "alimentacion": "Tablero eléctrico",
+    "perfil": "contacto-seco",
+    "calibracion_vence": null
+  },
+  {
+    "id": "LAM-F1",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "frente-1",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-INC-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "inclinado",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-10-26"
+  },
+  {
+    "id": "TH-INC-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "inclinado",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-01-16"
+  },
+  {
+    "id": "AN-INC-01",
+    "tipo": "Anemómetro",
+    "zona_id": "inclinado",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-01-18"
+  },
+  {
+    "id": "LAM-INC",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "inclinado",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-G2-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "galeria-2",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-12-14"
+  },
+  {
+    "id": "TH-G2-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "galeria-2",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-01-29"
+  },
+  {
+    "id": "AN-G2-01",
+    "tipo": "Anemómetro",
+    "zona_id": "galeria-2",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-02-04"
+  },
+  {
+    "id": "LAM-G2",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "galeria-2",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-F2-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "frente-2",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2026-12-23"
+  },
+  {
+    "id": "TH-F2-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "frente-2",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-02-11"
+  },
+  {
+    "id": "AN-F2-01",
+    "tipo": "Anemómetro",
+    "zona_id": "frente-2",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-02-21"
+  },
+  {
+    "id": "PM-F2-01",
+    "tipo": "Monitor de polvo respirable",
+    "zona_id": "frente-2",
+    "variables": [
+      "pm"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "polvo-generico",
+    "calibracion_vence": "2026-11-23"
+  },
+  {
+    "id": "VA-F2-01",
+    "tipo": "Contacto de marcha ventilador auxiliar",
+    "zona_id": "frente-2",
+    "variables": [
+      "ventilador"
+    ],
+    "alimentacion": "Tablero eléctrico",
+    "perfil": "contacto-seco",
+    "calibracion_vence": null
+  },
+  {
+    "id": "LAM-F2",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "frente-2",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-BOM-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "bombeo",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2027-01-01"
+  },
+  {
+    "id": "TH-BOM-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "bombeo",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-02-24"
+  },
+  {
+    "id": "AN-BOM-01",
+    "tipo": "Anemómetro",
+    "zona_id": "bombeo",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-03-10"
+  },
+  {
+    "id": "LAM-BOM",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "bombeo",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "MG-RET-01",
+    "tipo": "Detector multigas fijo",
+    "zona_id": "retorno",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "co2",
+      "h2s",
+      "no2"
+    ],
+    "alimentacion": "Red + batería respaldo",
+    "perfil": "multigas-generico",
+    "calibracion_vence": "2027-01-10"
+  },
+  {
+    "id": "TH-RET-01",
+    "tipo": "Sensor temperatura / humedad",
+    "zona_id": "retorno",
+    "variables": [
+      "temp",
+      "hr"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "th-generico",
+    "calibracion_vence": "2027-03-09"
+  },
+  {
+    "id": "AN-RET-01",
+    "tipo": "Anemómetro",
+    "zona_id": "retorno",
+    "variables": [
+      "air"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "anemometro-generico",
+    "calibracion_vence": "2027-03-27"
+  },
+  {
+    "id": "LAM-RET",
+    "tipo": "Control de lámparas (personal)",
+    "zona_id": "retorno",
+    "variables": [
+      "personas"
+    ],
+    "alimentacion": "Red eléctrica",
+    "perfil": "control-lamparas",
+    "calibracion_vence": null
+  },
+  {
+    "id": "P-014",
+    "tipo": "Detector portátil personal",
+    "zona_id": "frente-1",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "h2s"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "portatil-generico",
+    "portador": "J. Rincón",
+    "calibracion_vence": "2026-11-01"
+  },
+  {
+    "id": "P-022",
+    "tipo": "Detector portátil personal",
+    "zona_id": "frente-2",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "h2s"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "portatil-generico",
+    "portador": "M. Pabón",
+    "calibracion_vence": "2026-11-07"
+  },
+  {
+    "id": "P-031",
+    "tipo": "Detector portátil personal",
+    "zona_id": "galeria-2",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "h2s"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "portatil-generico",
+    "portador": "L. Carrascal",
+    "calibracion_vence": "2026-11-13"
+  },
+  {
+    "id": "P-047",
+    "tipo": "Detector portátil personal",
+    "zona_id": "frente-2",
+    "variables": [
+      "o2",
+      "ch4",
+      "co",
+      "h2s"
+    ],
+    "alimentacion": "Batería",
+    "perfil": "portatil-generico",
+    "portador": "A. Quintero",
+    "calibracion_vence": "2026-11-19"
+  }
+]

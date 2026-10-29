@@ -1,0 +1,15 @@
+{
+  "name": "atmosmart",
+  "private": true,
+  "description": "Monitoreo preventivo de atmósferas en minas subterráneas",
+  "workspaces": ["backend", "simulador"],
+  "scripts": {
+    "backend": "npm run dev -w backend",
+    "simular": "npm run simular -w simulador --",
+    "historico": "npm run historico -w simulador --",
+    "db:seed": "npm run db:seed -w backend",
+    "test": "npm test -w backend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w simulador"
+  },
+  "engines": { "node": ">=20" }
+}

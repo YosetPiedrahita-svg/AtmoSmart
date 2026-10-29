@@ -65,9 +65,10 @@
       const n = AS.fmt.number(value, v.decimals);
       return withUnit ? `${n} ${v.unit}` : n;
     },
-    time: (ts) => timeFmt.format(new Date(ts)),
-    dateTime: (ts) => dateTimeFmt.format(new Date(ts)),
+    time: (ts) => (ts == null ? "—" : timeFmt.format(new Date(ts))),
+    dateTime: (ts) => (ts == null ? "—" : dateTimeFmt.format(new Date(ts))),
     ago(ts) {
+      if (ts == null) return "sin datos";
       const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
       if (s < 60) return `hace ${s} s`;
       const m = Math.round(s / 60);
@@ -208,6 +209,7 @@
           <button class="icon-btn menu-toggle" type="button" aria-label="Abrir menú" aria-controls="sidebar" data-open-nav>${AS.icon("menu")}</button>
           <div class="topbar-title truncate">${AS.escape(title)}</div>
           <div class="topbar-actions">
+            <span class="pill-status hide-mobile" data-datasource title=""><i></i><span>Conectando…</span></span>
             <span class="pill-status hide-mobile" data-connection><i></i><span>En línea</span></span>
             <span class="pill-status hide-mobile" title="Última sincronización con el gateway">${AS.icon("activity", "icon-sm")}<span data-last-sync>—</span></span>
             <a class="icon-btn" href="alertas.html" aria-label="Alertas activas">${AS.icon("bell")}<span class="dot-count hidden" data-alert-count></span></a>
@@ -247,6 +249,23 @@
     addEventListener("offline", updateConn);
     updateConn();
 
+    // Fuente de datos: backend (sensores / simulador) o datos simulados locales
+    const fuente = AS.qs("[data-datasource]", app);
+    const updateFuente = () => {
+      const modos = {
+        backend: ["Backend · datos de sensores", false, `Conectado a ${AS.backendUrl}`],
+        "backend-caido": ["Backend sin respuesta · reintentando", true, `No hay conexión en vivo con ${AS.backendUrl}`],
+        mock: ["Modo demo · datos locales", true, "Sin backend: se usan datos simulados en el navegador"],
+        conectando: ["Conectando…", false, ""],
+      };
+      const [texto, aviso, titulo] = modos[AS.dataMode] || modos.mock;
+      fuente.classList.toggle("is-offline", aviso);
+      fuente.lastElementChild.textContent = texto;
+      fuente.title = titulo;
+    };
+    document.addEventListener("as:datamode", updateFuente);
+    updateFuente();
+
     AS.api.getShiftSummary().then((s) => {
       AS.qs("[data-shift]", app).textContent = `${s.shift} · ${s.from}–${s.to} · ${s.workersInside} personas en interior`;
     });
@@ -276,6 +295,18 @@
   /** Ejecuta `fn` ahora y cada `ms` mientras la pestaña esté visible (simula datos en vivo). */
   AS.live = function (fn, ms = 5000) {
     fn();
+    // Con backend, además del sondeo periódico se refresca al llegar un evento en vivo (SSE).
+    if (AS.api.subscribe) {
+      let pendiente = null;
+      AS.api.subscribe(() => {
+        if (pendiente || document.visibilityState !== "visible") return;
+        pendiente = setTimeout(() => {
+          pendiente = null;
+          fn();
+          AS.markSynced();
+        }, 400);
+      });
+    }
     return setInterval(() => {
       if (document.visibilityState === "visible") {
         fn();

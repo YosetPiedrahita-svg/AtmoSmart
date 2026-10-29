@@ -1,0 +1,25 @@
+{
+  "name": "@atmosmart/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend de AtmoSmart — arquitectura hexagonal (puertos y adaptadores)",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
+    "start": "tsx --env-file-if-exists=.env src/main.ts",
+    "db:seed": "tsx --env-file-if-exists=.env scripts/seed-supabase.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "express": "^4.22.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.25",
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "~5.7.3",
+    "vitest": "^3.2.7"
+  }
+}
