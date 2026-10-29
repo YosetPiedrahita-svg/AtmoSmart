@@ -8,3 +8,7 @@ frente a los límites establecidos y genera alertas preventivas (por umbral y po
 
 - [`frontend/`](frontend/README.md): mockup navegable en HTML, CSS y JS con datos simulados,
   estilos base y páginas principales. Para verlo, abra `frontend/index.html` en el navegador.
+- [`docs/arquitectura.md`](docs/arquitectura.md): arquitectura hexagonal (puertos y adaptadores),
+  independiente de la marca del sensor, con el demo inicial centrado en el frente de explotación.
+- [`docs/requerimientos-de-datos.md`](docs/requerimientos-de-datos.md): información que se necesita
+  de la mina, la normativa, los sensores y la operación para usar el sistema en la vida real.
