@@ -6,7 +6,7 @@
 
 AS.openManualEntry = function (zoneId, onSaved) {
   const zoneOptions = AS.ZONES.map((z) => `<option value="${z.id}"${z.id === zoneId ? " selected" : ""}>${AS.escape(z.name)}</option>`).join("");
-  const varFields = AS.VARIABLES.filter((v) => ["o2", "ch4", "co", "h2s", "co2", "temp"].includes(v.key))
+  const varFields = AS.VARIABLES.filter((v) => ["o2", "ch4", "co", "h2s", "co2", "temp", "pm"].includes(v.key))
     .map((v) => `
       <div class="field">
         <label for="m-${v.key}">${v.short} <span class="muted">${v.label}</span></label>

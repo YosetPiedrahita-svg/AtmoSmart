@@ -18,16 +18,16 @@
   const LATENCY_MS = 120;
   const MINUTE = 60 * 1000;
 
-  const BASE = { o2: 20.85, ch4: 0.06, co: 4, co2: 0.08, h2s: 0.1, no2: 0.05, temp: 22, hr: 80, air: 1.2 };
-  const NOISE = { o2: 0.06, ch4: 0.02, co: 1.2, co2: 0.02, h2s: 0.08, no2: 0.03, temp: 0.15, hr: 1.5, air: 0.06 };
+  const BASE = { o2: 20.85, ch4: 0.06, co: 4, co2: 0.08, h2s: 0.1, no2: 0.05, temp: 22, hr: 80, air: 1.2, pm: 0.15 };
+  const NOISE = { o2: 0.06, ch4: 0.02, co: 1.2, co2: 0.02, h2s: 0.08, no2: 0.03, temp: 0.15, hr: 1.5, air: 0.06, pm: 0.04 };
 
   const PROFILES = {
     "bocamina":  { o2: 20.9, ch4: 0.0, co: 1, temp: 18, hr: 72, air: 2.2, workers: 4 },
     "galeria-1": { co: 7, no2: 0.08, temp: 22, air: 1.6, workers: 6 },
-    "frente-1":  { ch4: 0.22, co: 10, co2: 0.18, temp: 26.8, hr: 88, air: 0.6, workers: 9 },
+    "frente-1":  { ch4: 0.22, co: 10, co2: 0.18, temp: 26.8, hr: 88, air: 0.6, pm: 0.62, workers: 9 },
     "inclinado": { ch4: 0.14, temp: 23, air: 1.0, workers: 2 },
     "galeria-2": { co: 6, temp: 24, air: 0.9, workers: 5 },
-    "frente-2":  { o2: 20.4, ch4: 0.3, co: 8, co2: 0.22, temp: 25.4, hr: 90, air: 0.45, workers: 7 },
+    "frente-2":  { o2: 20.4, ch4: 0.3, co: 8, co2: 0.22, temp: 25.4, hr: 90, air: 0.45, pm: 0.38, workers: 7 },
     "bombeo":    { temp: 23.5, hr: 95, air: 0.7, workers: 1 },
     "retorno":   { o2: 20.6, ch4: 0.2, co: 12, co2: 0.25, temp: 25, hr: 92, air: 2.5, workers: 0 },
   };
@@ -178,6 +178,17 @@
         battery: 40 + Math.round(hash(i + 21) * 60),
         calDays: 30 + Math.round(hash(i + 33) * 150),
       });
+      if (z.id.startsWith("frente")) {
+        devices.push({
+          id: `PM-${code}-01`,
+          type: "Monitor de polvo respirable",
+          zoneId: z.id,
+          vars: ["pm"],
+          power: "Red + batería respaldo",
+          battery: 60 + Math.round(hash(i + 66) * 40),
+          calDays: 10 + Math.round(hash(i + 77) * 60),
+        });
+      }
       if (z.id !== "bocamina") {
         devices.push({
           id: `AN-${code}-01`,

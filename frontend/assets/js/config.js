@@ -28,10 +28,13 @@ AS.VARIABLES = [
   { key: "temp", label: "Temperatura",        short: "T",    unit: "°C",  decimals: 1, scale: [10, 35],  thresholds: { highWarn: 26, highCrit: 28 } },
   { key: "hr",   label: "Humedad relativa",   short: "HR",   unit: "%",   decimals: 0, scale: [0, 100],  thresholds: { highWarn: 95 } },
   { key: "air",  label: "Velocidad del aire", short: "V",    unit: "m/s", decimals: 2, scale: [0, 3],    thresholds: { lowCrit: 0.2, lowWarn: 0.3 } },
+  // Polvo de carbón, fracción respirable. El límite de referencia es un promedio
+  // ponderado de 8 h (TWA); la lectura instantánea se usa como indicador temprano.
+  { key: "pm",   label: "Polvo de carbón (respirable)", short: "Polvo", unit: "mg/m³", decimals: 2, scale: [0, 2], thresholds: { highWarn: 0.5, highCrit: 0.9 } },
 ];
 
 /** Variables que se muestran en tarjetas compactas (las más críticas) */
-AS.KEY_VARIABLES = ["o2", "ch4", "co", "temp"];
+AS.KEY_VARIABLES = ["o2", "ch4", "co", "pm"];
 
 /** Zonas monitoreadas (cada una con sus sensores). La geometría está en AS.MINE_LAYOUT. */
 AS.ZONES = [
@@ -136,6 +139,12 @@ AS.PROTOCOLS = {
     "Revisar ventilador principal / auxiliar y puertas de ventilación.",
     "Verificar que la manga no esté rota o desconectada.",
     "Suspender labores si no se restablece el caudal mínimo.",
+  ],
+  pm: [
+    "Verificar el riego / humectación del frente y de las vías de acarreo.",
+    "Confirmar que el personal use protección respiratoria adecuada.",
+    "Revisar caudal de ventilación en el frente para diluir el polvo.",
+    "Si persiste, suspender la actividad que genera polvo (corte, cargue) hasta controlarlo.",
   ],
   sensor: [
     "Enviar técnico a revisar el equipo y su conexión con el gateway.",
