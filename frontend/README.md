@@ -28,7 +28,7 @@ y entre a <http://localhost:8080>.
 | `alertas.html` | Alertas por umbral, predictivas, sin señal y de calibración; protocolo de respuesta y reconocimiento con bitácora |
 | `historial.html` | Consulta filtrable, resumen estadístico del periodo y exportación a CSV |
 | `dispositivos.html` | Flujo de captura de datos, inventario de sensores (estado, batería, calibración) y registro manual de contingencia |
-| `configuracion.html` | Límites de precaución y alarma por variable y preferencias de notificación |
+| `configuracion.html` | Límites normativos (con artículo), límites por zona, criterios internos de precaución y preferencias de notificación |
 
 ## Estructura
 
@@ -45,7 +45,8 @@ frontend/
     │   └── components.css    botones, badges, tarjetas, KPIs, tablas, formularios,
     │                         alertas, gráficos, mapa, modal, toasts…
     └── js/
-        ├── config.js         variables, límites por defecto, zonas y protocolos
+        ├── config.js         variables, zonas (tipo de labor y de vía) y protocolos
+        ├── normativa.js      motor normativo del semáforo (Parámetros 1 y 2)
         ├── mock-api.js       API simulada (reemplazar por fetch al backend)
         ├── ui.js             íconos, shell, formato, sesión, tema, modales, toasts
         ├── charts.js         gráficos SVG y mapa de la mina
@@ -121,10 +122,12 @@ Para conectarlo basta con reemplazar el cuerpo de esas funciones por llamadas
 Escenarios incluidos en la simulación para la demo:
 
 - **Frente 2**: metano en ascenso sostenido, que dispara una alerta predictiva con el tiempo estimado hasta la alarma.
-- **Frente 1**: temperatura en precaución.
-- **Galería N1**: pico de CO y NO₂ después de una voladura hace unas 4,5 h (aparece en alertas resueltas).
+- **Frente 1**: temperatura efectiva sobre 28 °C, con tiempo de permanencia limitado (Art. 217).
+- **Galería N1**: pico de CO y NO₂ después de una voladura hace unas 4,5 h; la lectura ya bajó, pero el promedio de la jornada de NO₂ supera el TLV-TWA (Art. 39).
+- **Inclinado**: detector multigas con calibración vencida; sus gases se muestran como "no disponible".
 - **Estación de bombeo**: detector sin comunicación.
 
-> ⚠️ **Límites**: los valores de `config.js` son de referencia para el prototipo.
-> El equipo de Ingeniería de Minas debe validarlos contra el Decreto 1886 de 2015
-> y los valores límite permisibles vigentes.
+> ⚠️ **Límites**: la evaluación del semáforo está en `normativa.js` y sigue los Parámetros normativos 1 y 2
+> (Decreto 1886 de 2015, modificado por el Decreto 944 de 2022). Los umbrales de precaución son criterios
+> internos configurables, no límites legales. Detalle y decisiones pendientes de validar con Ingeniería de
+> Minas en [`docs/parametros-normativos.md`](../docs/parametros-normativos.md).

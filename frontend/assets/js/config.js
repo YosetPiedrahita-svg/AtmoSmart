@@ -1,51 +1,73 @@
 /* ==========================================================================
    AtmoSmart — Configuración de dominio
-   Variables monitoreadas, límites por defecto y zonas de la mina.
+   Variables monitoreadas, zonas de la mina y protocolos de respuesta.
 
-   IMPORTANTE: los límites son VALORES DE REFERENCIA para el prototipo.
-   Deben validarse con el equipo de Ingeniería de Minas contra la normativa
-   aplicable (en Colombia: Decreto 1886 de 2015 — Reglamento de Seguridad en
-   las Labores Mineras Subterráneas) y los TLV vigentes.
-   El usuario puede ajustarlos en "Límites y configuración" (localStorage).
+   Los límites normativos y su evaluación están en normativa.js; los criterios
+   internos (umbral amarillo, jornada, redondeo) se ajustan en "Límites y
+   configuración" y se guardan en este navegador (localStorage).
    ========================================================================== */
 
 window.AS = window.AS || {};
 
 /**
- * Cada umbral es opcional:
- *   lowCrit  <= valor  -> alarma por defecto (ej. O2 bajo)
- *   lowWarn  <= valor  -> precaución por defecto
- *   highWarn >= valor  -> precaución por exceso
- *   highCrit >= valor  -> alarma por exceso
+ * Variables monitoreadas.
+ *
+ * Los umbrales NO se leen de aquí directamente: AS.getThresholds(key, zoneId)
+ * (en normativa.js) los calcula a partir de los Parámetros normativos 1 y 2
+ * (Decreto 1886 de 2015, modificado por el Decreto 944 de 2022), del tipo de
+ * labor de la zona y de los criterios internos configurables.
+ *
+ *   lowCrit  >= valor  -> alarma por defecto (ej. O₂ bajo)
+ *   lowWarn  >= valor  -> precaución por defecto
+ *   highWarn <= valor  -> precaución por exceso
+ *   highCrit <= valor  -> alarma por exceso
+ *
+ * `role`:
+ *   "gas"     se evalúa en lectura instantánea y además como exposición (Art. 39)
+ *   "input"   dato de entrada para calcular otra variable; no tiene semáforo propio
+ *   "derived" se calcula a partir de otras variables (temperatura efectiva, Art. 217)
+ *
+ * `thresholds` solo se usa para variables que los Parámetros 1 y 2 no cubren
+ * (polvo de carbón): es un criterio interno, por confirmar con Minas.
  */
 AS.VARIABLES = [
-  { key: "o2",   label: "Oxígeno",            short: "O₂",   unit: "%",   decimals: 1, scale: [17, 24],  thresholds: { lowCrit: 19.5, lowWarn: 20.0, highWarn: 22.5, highCrit: 23.5 } },
-  { key: "ch4",  label: "Metano",             short: "CH₄",  unit: "%",   decimals: 2, scale: [0, 2],    thresholds: { highWarn: 0.5, highCrit: 1.0 } },
-  { key: "co",   label: "Monóxido de carbono", short: "CO",  unit: "ppm", decimals: 0, scale: [0, 100],  thresholds: { highWarn: 25, highCrit: 50 } },
-  { key: "co2",  label: "Dióxido de carbono", short: "CO₂",  unit: "%",   decimals: 2, scale: [0, 1.5],  thresholds: { highWarn: 0.5, highCrit: 1.0 } },
-  { key: "h2s",  label: "Sulfuro de hidrógeno", short: "H₂S", unit: "ppm", decimals: 1, scale: [0, 15],  thresholds: { highWarn: 1, highCrit: 10 } },
-  { key: "no2",  label: "Dióxido de nitrógeno", short: "NO₂", unit: "ppm", decimals: 1, scale: [0, 5],   thresholds: { highWarn: 0.2, highCrit: 3 } },
-  { key: "temp", label: "Temperatura",        short: "T",    unit: "°C",  decimals: 1, scale: [10, 35],  thresholds: { highWarn: 26, highCrit: 28 } },
-  { key: "hr",   label: "Humedad relativa",   short: "HR",   unit: "%",   decimals: 0, scale: [0, 100],  thresholds: { highWarn: 95 } },
-  { key: "air",  label: "Velocidad del aire", short: "V",    unit: "m/s", decimals: 2, scale: [0, 3],    thresholds: { lowCrit: 0.2, lowWarn: 0.3 } },
-  // Polvo de carbón, fracción respirable. El límite de referencia es un promedio
-  // ponderado de 8 h (TWA); la lectura instantánea se usa como indicador temprano.
-  { key: "pm",   label: "Polvo de carbón (respirable)", short: "Polvo", unit: "mg/m³", decimals: 2, scale: [0, 2], thresholds: { highWarn: 0.5, highCrit: 0.9 } },
+  { key: "o2",   label: "Oxígeno",              short: "O₂",   unit: "%",   decimals: 1, scale: [17, 24] },
+  { key: "ch4",  label: "Metano",               short: "CH₄",  unit: "%",   decimals: 2, scale: [0, 2] },
+  { key: "co",   label: "Monóxido de carbono",  short: "CO",   unit: "ppm", decimals: 0, scale: [0, 60],   role: "gas" },
+  { key: "co2",  label: "Dióxido de carbono",   short: "CO₂",  unit: "%",   decimals: 2, scale: [0, 1],    role: "gas" },
+  { key: "h2s",  label: "Ácido sulfhídrico",    short: "H₂S",  unit: "ppm", decimals: 1, scale: [0, 6],    role: "gas" },
+  { key: "no",   label: "Óxido nítrico",        short: "NO",   unit: "ppm", decimals: 1, scale: [0, 30],   role: "gas" },
+  { key: "no2",  label: "Dióxido de nitrógeno", short: "NO₂",  unit: "ppm", decimals: 2, scale: [0, 1.2],  role: "gas" },
+  { key: "so2",  label: "Dióxido de azufre",    short: "SO₂",  unit: "ppm", decimals: 2, scale: [0, 0.3],  role: "gas" },
+  { key: "te",   label: "Temperatura efectiva", short: "Te",   unit: "°C",  decimals: 1, scale: [15, 34],  role: "derived" },
+  { key: "temp", label: "Temperatura seca",     short: "Ts",   unit: "°C",  decimals: 1, scale: [10, 40],  role: "input" },
+  { key: "tw",   label: "Temperatura húmeda",   short: "Th",   unit: "°C",  decimals: 1, scale: [10, 40],  role: "input" },
+  { key: "hr",   label: "Humedad relativa",     short: "HR",   unit: "%",   decimals: 0, scale: [0, 100],  role: "input" },
+  { key: "air",  label: "Velocidad del aire",   short: "V",    unit: "m/s", decimals: 2, scale: [0, 3] },
+  // Polvo de carbón, fracción respirable. No está en los Parámetros 1 y 2: el umbral
+  // es un criterio interno del prototipo, por confirmar con Ingeniería de Minas.
+  { key: "pm",   label: "Polvo de carbón (respirable)", short: "Polvo", unit: "mg/m³", decimals: 2, scale: [0, 2], thresholds: { highWarn: 0.5, highCrit: 0.9 }, internal: true },
 ];
 
 /** Variables que se muestran en tarjetas compactas (las más críticas) */
-AS.KEY_VARIABLES = ["o2", "ch4", "co", "pm"];
+AS.KEY_VARIABLES = ["o2", "ch4", "co", "te"];
 
 /** Zonas monitoreadas (cada una con sus sensores). La geometría está en AS.MINE_LAYOUT. */
+/*
+ * `labor`: sitio de la labor según el Art. 53 (define el límite de metano). Ver AS.LABORES.
+ * `vent`:  tipo de vía según el Art. 56 (define la velocidad mínima y máxima del aire). Ver AS.VENTILACION.
+ * La clasificación de cada zona es una PROPUESTA del equipo para la mina simulada:
+ * debe validarla Ingeniería de Minas con el plano de ventilación real.
+ */
 AS.ZONES = [
-  { id: "bocamina",   name: "Bocamina",               level: "Superficie", type: "Acceso / entrada de aire" },
-  { id: "galeria-1",  name: "Galería principal N1",   level: "Nivel 1",    type: "Transporte" },
-  { id: "frente-1",   name: "Frente de explotación 1", level: "Nivel 1",   type: "Frente activo (labor ciega)" },
-  { id: "inclinado",  name: "Inclinado / tambor",     level: "N1 → N2",    type: "Comunicación entre niveles" },
-  { id: "galeria-2",  name: "Galería N2",             level: "Nivel 2",    type: "Transporte" },
-  { id: "frente-2",   name: "Frente de explotación 2", level: "Nivel 2",   type: "Frente activo (labor ciega)" },
-  { id: "bombeo",     name: "Estación de bombeo",     level: "Nivel 2",    type: "Servicios" },
-  { id: "retorno",    name: "Chimenea de retorno",    level: "N2 → Sup.",  type: "Salida de aire viciado / ventilador principal" },
+  { id: "bocamina",   name: "Bocamina",               level: "Superficie", type: "Acceso / entrada de aire",                         labor: "via_general",       vent: "via_explotacion" },
+  { id: "galeria-1",  name: "Galería principal N1",   level: "Nivel 1",    type: "Transporte",                                       labor: "via_general",       vent: "via_explotacion" },
+  { id: "frente-1",   name: "Frente de explotación 1", level: "Nivel 1",   type: "Frente activo (labor ciega)",                      labor: "frente",            vent: "aux_carbon" },
+  { id: "inclinado",  name: "Inclinado / tambor",     level: "N1 → N2",    type: "Comunicación entre niveles",                       labor: "via_general",       vent: "via_explotacion" },
+  { id: "galeria-2",  name: "Galería N2",             level: "Nivel 2",    type: "Transporte",                                       labor: "via_general",       vent: "via_explotacion" },
+  { id: "frente-2",   name: "Frente de explotación 2", level: "Nivel 2",   type: "Frente activo (labor ciega)",                      labor: "frente",            vent: "aux_carbon" },
+  { id: "bombeo",     name: "Estación de bombeo",     level: "Nivel 2",    type: "Servicios",                                        labor: "via_general",       vent: "aux_roca" },
+  { id: "retorno",    name: "Chimenea de retorno",    level: "N2 → Sup.",  type: "Salida de aire viciado / ventilador principal",    labor: "retorno_principal", vent: "pozo_ventilacion" },
 ];
 
 /**
@@ -113,10 +135,11 @@ AS.STATUS_RANK = { ok: 0, off: 1, warn: 2, crit: 3 };
 /** Protocolos de respuesta sugeridos por tipo de evento (a validar con Minas / HSE). */
 AS.PROTOCOLS = {
   ch4: [
-    "Suspender trabajos con fuentes de ignición en la zona (equipos eléctricos, corte, soldadura).",
-    "Verificar funcionamiento del ventilador auxiliar y estado de la manga de ventilación.",
+    "Al alcanzar el límite del Art. 53 para el sitio: suspender labores y evacuar inmediatamente la zona.",
+    "Desenergizar y retirar fuentes de ignición (equipos eléctricos, corte, soldadura).",
+    "Verificar el ventilador auxiliar y el estado de la manga de ventilación.",
     "Confirmar la lectura con un detector portátil calibrado.",
-    "Si la concentración alcanza el límite de alarma: evacuar la zona y cortar energía.",
+    "No ingresar ni permanecer hasta diluir el metano por debajo del límite (Art. 53, par. 1). Por encima de 2 % solo ingresa personal de salvamento.",
     "Registrar la causa y las acciones tomadas antes de reanudar labores.",
   ],
   co: [
@@ -130,10 +153,18 @@ AS.PROTOCOLS = {
     "Revisar circuito de ventilación y posibles obstrucciones.",
     "No reingresar sin autoconservador y medición confirmada ≥ límite.",
   ],
-  temp: [
-    "Aplicar pausas de hidratación y rotación de personal.",
-    "Revisar caudal de aire en el frente.",
-    "Vigilar síntomas de estrés térmico.",
+  te: [
+    "Calcular la temperatura efectiva con temperatura húmeda, seca y velocidad del aire (Art. 217).",
+    "Limitar el tiempo de permanencia del personal según la tabla del Art. 217 (29 °C: 6 h · 30 °C: 4 h · 31 °C: 2 h).",
+    "Por encima de 31 °C retirar al personal: solo pueden ingresar cuadrillas de salvamento (Art. 218).",
+    "Aumentar el caudal de aire en la labor y revisar el circuito de ventilación.",
+    "Aplicar pausas de hidratación y vigilar síntomas de estrés térmico.",
+  ],
+  exposicion: [
+    "Retirar al personal expuesto hacia aire fresco.",
+    "Registrar el tiempo de exposición de cada trabajador en la zona durante la jornada.",
+    "Aumentar la ventilación y buscar la fuente del gas (voladura, motor diésel, incendio).",
+    "Confirmar con detector portátil antes de permitir el reingreso.",
   ],
   air: [
     "Revisar ventilador principal / auxiliar y puertas de ventilación.",
@@ -158,7 +189,7 @@ AS.PROTOCOLS = {
   ],
 };
 
-/* ---------- Límites editables (persisten en localStorage) ---------- */
+/* ---------- Almacenamiento local (localStorage) ---------- */
 
 AS.storage = {
   get(key, fallback) {
@@ -179,12 +210,6 @@ AS.storage = {
   remove(key) {
     try { localStorage.removeItem("atmosmart:" + key); } catch (e) { /* noop */ }
   },
-};
-
-AS.getThresholds = function (key) {
-  const custom = AS.storage.get("thresholds", {});
-  const variable = AS.VARIABLES.find((v) => v.key === key);
-  return Object.assign({}, variable.thresholds, custom[key] || {});
 };
 
 AS.getVariable = (key) => AS.VARIABLES.find((v) => v.key === key);

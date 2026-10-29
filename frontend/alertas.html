@@ -36,7 +36,7 @@
               <option value="all">Todas</option>
               <option value="crit">Alarma</option>
               <option value="warn">Precaución</option>
-              <option value="off">Sin señal</option>
+              <option value="off">Sin señal / no válida</option>
               <option value="info">Mantenimiento</option>
             </select>
           </div>
@@ -44,8 +44,10 @@
             <select class="select select-sm" id="f-type">
               <option value="all">Todos</option>
               <option>Umbral superado</option>
+              <option>Exposición de jornada</option>
               <option>Tendencia predictiva</option>
               <option>Sensor sin señal</option>
+              <option>Lectura no válida</option>
               <option>Calibración vencida</option>
             </select>
           </div>
@@ -56,6 +58,7 @@
   </main>
 
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/normativa.js"></script>
   <script src="assets/js/mock-api.js"></script>
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/chatbot.js"></script>

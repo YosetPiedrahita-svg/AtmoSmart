@@ -76,14 +76,23 @@
       if (h < 24) return `hace ${h} h`;
       return `hace ${Math.round(h / 24)} d`;
     },
-    limits(key) {
+    /** Texto corto del límite de una variable en una zona, con su referencia normativa. */
+    limits(key, zoneId) {
       const v = AS.getVariable(key);
-      const t = AS.getThresholds(key);
+      const n = (x) => AS.fmt.number(x, v.decimals);
+      if (key === "te") return "> 28 °C limita permanencia · > 31 °C solo salvamento (Arts. 217–218)";
+      if (v.role === "input") return "Entrada para calcular la temperatura efectiva (Art. 217)";
+      if (AS.VLP[key]) {
+        const vlp = AS.VLP[key];
+        return [vlp.twa != null && `TLV-TWA ${n(vlp.twa)}`, vlp.stel != null && `STEL ${n(vlp.stel)}`].filter(Boolean).join(" · ") + ` ${v.unit} (Art. 39)`;
+      }
+      const t = AS.getThresholds(key, zoneId);
       const parts = [];
-      if (t.lowCrit != null) parts.push(`mín ${AS.fmt.number(t.lowCrit, v.decimals)}`);
-      if (t.highCrit != null) parts.push(`máx ${AS.fmt.number(t.highCrit, v.decimals)}`);
-      if (!parts.length && t.highWarn != null) parts.push(`aviso ${AS.fmt.number(t.highWarn, v.decimals)}`);
-      return parts.join(" · ") + ` ${v.unit}`;
+      if (t.lowCrit != null) parts.push(`mín ${n(t.lowCrit)}`);
+      if (t.highCrit != null) parts.push(`máx ${n(t.highCrit)}`);
+      if (!parts.length && t.highWarn != null) parts.push(`aviso ${n(t.highWarn)}`);
+      const ref = key === "o2" ? " (Art. 38)" : key === "ch4" ? " (Art. 53)" : key === "air" ? " (Art. 56)" : v.internal ? " (criterio interno)" : "";
+      return parts.join(" · ") + ` ${v.unit}${ref}`;
     },
   };
 

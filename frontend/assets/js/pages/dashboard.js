@@ -19,7 +19,7 @@
       title = "Condición general: precaución";
       text = [
         warn.length && `${warn.length} zona(s) en precaución: ${warn.map((z) => z.name).join(", ")}.`,
-        off.length && `${off.map((z) => z.name).join(", ")} sin señal.`,
+        off.length && `${off.map((z) => z.name).join(", ")} sin señal o sin lectura válida.`,
       ].filter(Boolean).join(" ");
     }
     if (crit.length) {
@@ -88,7 +88,7 @@
             <div class="text-xs muted">${AS.getVariable(sparkKey).short} · última hora</div>
             <div data-spark="${z.id}">${sparkCache[z.id] || ""}</div>
           </div>
-          <div class="spread text-xs muted"><span>${r.zoneStatus === "off" ? `Última lectura ${AS.fmt.ago(r.ts)}` : `Actualizado ${AS.fmt.time(r.ts)}`}</span><span>${r.workers} persona(s)</span></div>
+          <div class="spread text-xs muted"><span>${r.offline ? `Última lectura ${AS.fmt.ago(r.ts)}` : `Actualizado ${AS.fmt.time(r.ts)}`}</span><span>${r.workers} persona(s)</span></div>
         </div>
       </a>`;
   }

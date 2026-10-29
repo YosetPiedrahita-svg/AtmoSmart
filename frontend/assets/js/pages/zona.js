@@ -7,7 +7,7 @@
 
   AS.qs("[data-crumb]").textContent = zone.name;
   AS.qs("[data-zone-name]").textContent = zone.name;
-  AS.qs("[data-zone-meta]").textContent = `${zone.level} · ${zone.type}`;
+  AS.qs("[data-zone-meta]").textContent = `${zone.level} · ${zone.type} · ${AS.norma.labor(zone.id).label} (CH₄ máx. ${AS.fmt.number(AS.norma.labor(zone.id).ch4, 1)} %) · ${AS.norma.ventilacion(zone.id).label}`;
   AS.qs("[data-history-link]").href = `historial.html?zona=${zone.id}`;
   AS.qs("[data-manual]").addEventListener("click", () => AS.openManualEntry(zone.id, refresh));
 
@@ -28,19 +28,35 @@
     })
   );
 
+  /** Información normativa adicional de la variable: exposición, permanencia o calidad. */
+  function extra(v, r) {
+    const k = v.key;
+    if (r.quality[k] === "calibracion_vencida") return `<span class="badge badge-off no-dot">Calibración vencida: lectura no válida</span>`;
+    if (k === "te" && r.permanencia) return `<span class="badge ${r.status.te === "ok" ? "badge-ok" : r.status.te === "warn" ? "badge-warn" : "badge-crit"} no-dot">Permanencia: ${AS.escape(r.permanencia.texto)}</span>`;
+    const ex = r.exposure[k];
+    if (ex) {
+      const parts = [];
+      if (ex.twaLim != null) parts.push(`Jornada ${AS.fmt.number(ex.twa, v.decimals)}/${AS.fmt.number(ex.twaLim, v.decimals)}`);
+      if (ex.stelLim != null) parts.push(`15 min ${AS.fmt.number(ex.stel, v.decimals)}/${AS.fmt.number(ex.stelLim, v.decimals)}`);
+      return `<span class="badge ${ex.status === "ok" ? "badge-ok" : ex.status === "warn" ? "badge-warn" : "badge-crit"} no-dot" style="white-space:normal;line-height:1.35;height:auto;padding-block:2px" title="Exposición (Art. 39): promedio de la jornada en curso y de los últimos 15 minutos frente al TLV">${parts.join(" · ")}</span>`;
+    }
+    return "";
+  }
+
   function tile(v, r) {
     const value = r.values[v.key];
     const status = r.status[v.key];
     const trend = r.trends[v.key];
-    const eta = trend.etaMin != null && trend.etaMin <= 60 && trend.direction !== "flat" && status !== "crit"
+    const badgeText = r.quality[v.key] === "calibracion_vencida" ? "No disponible" : v.role === "input" && status !== "off" ? "Dato" : undefined;
+    const eta = trend.etaMin != null && trend.etaMin <= 60 && trend.direction !== "flat" && status !== "crit" && status !== "off"
       ? `<span class="badge badge-warn no-dot">≈ ${trend.etaMin} min a alarma</span>` : "";
     return `
       <button type="button" class="var-tile" data-status="${status}" data-var="${v.key}" style="text-align:left;cursor:pointer">
-        <div class="var-tile-head"><span class="var-name">${v.short} <span>${v.label}</span></span>${AS.badge(status)}</div>
+        <div class="var-tile-head"><span class="var-name">${v.short} <span>${v.label}</span></span>${AS.badge(status, badgeText)}</div>
         <div class="var-value">${AS.fmt.value(v.key, value, false)}<small>${v.unit}</small></div>
         <div class="meter" data-status="${status}"><div class="meter-fill" style="width:${AS.meterPct(v.key, value)}%"></div></div>
-        <div class="spread"><span class="var-limit">${AS.fmt.limits(v.key)}</span>${AS.trendHtml(trend)}</div>
-        ${eta}
+        <div class="spread"><span class="var-limit">${AS.escape(AS.fmt.limits(v.key, zone.id))}</span>${AS.trendHtml(trend)}</div>
+        ${extra(v, r)}${eta}
       </button>`;
   }
 
@@ -50,7 +66,7 @@
       AS.api.getSeries({ zoneId: zone.id, varKey: state.varKey, minutes: state.minutes, step }),
       AS.api.getForecast({ zoneId: zone.id, varKey: state.varKey, minutes: 30 }),
     ]).then(([points, forecast]) => {
-      AS.charts.line(AS.qs("[data-chart]"), { points, forecast, varKey: state.varKey });
+      AS.charts.line(AS.qs("[data-chart]"), { points, forecast, varKey: state.varKey, zoneId: zone.id });
     });
   }
 
@@ -59,9 +75,11 @@
       const r = z.reading;
       AS.qs("[data-zone-badge]").innerHTML = AS.badge(r.zoneStatus);
 
-      AS.qs("[data-offline]").innerHTML = r.zoneStatus === "off"
+      AS.qs("[data-offline]").innerHTML = r.offline
         ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("wifiOff", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Zona sin monitoreo</div><div class="banner-text">El detector fijo no reporta desde ${AS.fmt.time(r.ts)}. Mida con detector portátil y use “Registro manual” mientras se restablece.</div></div></div>`
-        : "";
+        : r.calibrationExpired
+          ? `<div class="banner banner-warn"><div class="banner-icon">${AS.icon("alert", "icon-lg")}</div><div class="banner-body"><div class="banner-title">Gases sin lectura válida</div><div class="banner-text">El detector multigas tiene la calibración vencida hace ${r.calibrationExpired} días. Sus lecturas se muestran como “no disponible”, nunca como seguras. Mida con detector portátil calibrado y use “Registro manual”.</div></div></div>`
+          : "";
 
       const tiles = AS.qs("[data-tiles]");
       tiles.innerHTML = AS.VARIABLES.map((v) => tile(v, r)).join("");

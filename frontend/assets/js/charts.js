@@ -20,9 +20,9 @@
    * @param {{points:{t:number,v:number|null}[], forecast?:{t,v}[], varKey:string}} opts
    */
   function line(el, opts) {
-    const { points, forecast = [], varKey } = opts;
+    const { points, forecast = [], varKey, zoneId } = opts;
     const variable = AS.getVariable(varKey);
-    const t = AS.getThresholds(varKey);
+    const t = AS.getThresholds(varKey, zoneId);
 
     const render = () => {
       const W = el.clientWidth || 600;

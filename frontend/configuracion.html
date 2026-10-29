@@ -11,36 +11,44 @@
     <div class="page-header">
       <div>
         <h1>Límites y configuración</h1>
-        <p>Umbrales de precaución y alarma por variable, y preferencias de notificación.</p>
+        <p>Límites normativos del semáforo, clasificación de cada zona, criterios internos de precaución y preferencias de notificación.</p>
       </div>
     </div>
 
     <div class="callout" data-callout>
-      <div><strong>Valores de referencia del prototipo.</strong> Deben validarse con Ingeniería de Minas contra el Decreto 1886 de 2015 (Reglamento de Seguridad en las Labores Mineras Subterráneas) y los valores límite permisibles vigentes. Los cambios se guardan en este navegador.</div>
+      <div><strong>Fuente: Parámetros normativos 1 y 2</strong> (Decreto 1886 de 2015, modificado por el Decreto 944 de 2022). Los <strong>límites normativos</strong> definen la alarma y no se editan aquí. Los <strong>criterios internos</strong> (umbral amarillo, jornada, redondeo) los define el equipo y <strong>no son límites legales</strong>. No es una certificación de cumplimiento: el responsable técnico debe confirmar el texto vigente y la categoría de la mina.</div>
     </div>
 
-    <form class="card" id="limits-form">
-      <div class="card-header">
-        <div><h2>Límites por variable</h2><p>Deje en blanco los umbrales que no aplican.</p></div>
-        <div class="cluster-sm">
-          <button class="btn btn-sm btn-ghost" type="button" data-reset>Restaurar valores por defecto</button>
-          <button class="btn btn-sm btn-primary" type="submit">Guardar límites</button>
-        </div>
-      </div>
+    <div class="card">
+      <div class="card-header"><div><h2>Límites normativos</h2><p>Valores que disparan la alarma (rojo) y su artículo.</p></div></div>
       <div class="table-wrap">
         <table class="table">
-          <thead>
-            <tr>
-              <th>Variable</th>
-              <th class="num">Alarma mín.</th>
-              <th class="num">Precaución mín.</th>
-              <th class="num">Precaución máx.</th>
-              <th class="num">Alarma máx.</th>
-              <th>Unidad</th>
-            </tr>
-          </thead>
-          <tbody data-rows></tbody>
+          <thead><tr><th>Variable</th><th>Límite / condición</th><th>Cómo se evalúa</th><th>Referencia</th></tr></thead>
+          <tbody data-norm-rows></tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div><h2>Límites por zona</h2><p>El metano (Art. 53) y la velocidad del aire (Art. 56) dependen del tipo de labor. La clasificación de cada zona es una propuesta para la mina simulada: debe validarla Ingeniería de Minas.</p></div></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Zona</th><th>Sitio de la labor (Art. 53)</th><th class="num">CH₄ máx.</th><th>Tipo de vía (Art. 56)</th><th class="num">Aire mín.</th><th class="num">Aire máx.</th></tr></thead>
+          <tbody data-zone-rows></tbody>
+        </table>
+      </div>
+    </div>
+
+    <form class="card" id="criteria-form">
+      <div class="card-header">
+        <div><h2>Criterios internos</h2><p>Umbral de precaución (amarillo) y parámetros de cálculo. Se guardan en este navegador.</p></div>
+        <div class="cluster-sm">
+          <button class="btn btn-sm btn-ghost" type="button" data-reset>Restaurar valores por defecto</button>
+          <button class="btn btn-sm btn-primary" type="submit">Guardar criterios</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid" data-criteria-fields></div>
       </div>
     </form>
 
@@ -77,6 +85,7 @@
   </main>
 
   <script src="assets/js/config.js"></script>
+  <script src="assets/js/normativa.js"></script>
   <script src="assets/js/mock-api.js"></script>
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/chatbot.js"></script>

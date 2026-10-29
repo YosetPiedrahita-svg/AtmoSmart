@@ -6,7 +6,7 @@
 
 AS.openManualEntry = function (zoneId, onSaved) {
   const zoneOptions = AS.ZONES.map((z) => `<option value="${z.id}"${z.id === zoneId ? " selected" : ""}>${AS.escape(z.name)}</option>`).join("");
-  const varFields = AS.VARIABLES.filter((v) => ["o2", "ch4", "co", "h2s", "co2", "temp", "pm"].includes(v.key))
+  const varFields = AS.VARIABLES.filter((v) => ["o2", "ch4", "co", "co2", "h2s", "no", "no2", "so2", "temp", "tw", "air", "pm"].includes(v.key))
     .map((v) => `
       <div class="field">
         <label for="m-${v.key}">${v.short} <span class="muted">${v.label}</span></label>
@@ -54,7 +54,7 @@ AS.openManualEntry = function (zoneId, onSaved) {
           .addManualReading({ zoneId: data.get("zoneId"), values, device, reason: data.get("reason"), user: AS.session.user().name })
           .then((row) => {
             dlg.close();
-            const worst = Object.entries(row.values).filter(([, v]) => v != null).map(([k, v]) => AS.api.statusOf(k, v));
+            const worst = Object.entries(row.values).filter(([, v]) => v != null).map(([k, v]) => AS.api.statusOf(k, v, row.zoneId));
             const kind = worst.includes("crit") ? "crit" : worst.includes("warn") ? "warn" : "ok";
             AS.toast(kind === "ok" ? "Lectura manual guardada. Valores dentro de límites." : "Lectura guardada. Hay valores fuera de límites: revise el protocolo.", kind);
             if (onSaved) onSaved(row);

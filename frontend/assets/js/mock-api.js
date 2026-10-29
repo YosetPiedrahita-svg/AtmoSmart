@@ -8,23 +8,34 @@
 
    Los datos son deterministas (función del tiempo + ruido con hash), así que
    todas las páginas ven la misma "mina" de forma coherente. Escenarios:
-     - Frente 2: metano en ascenso sostenido (dispara alerta predictiva).
-     - Frente 1: temperatura en precaución.
-     - Galería N1: pico de CO/NO₂ post-voladura hace ~4,5 h (alerta histórica).
+     - Frente 2: metano en ascenso sostenido (precaución y alerta predictiva
+       hacia el límite del Art. 53).
+     - Frente 1: temperatura efectiva sobre 28 °C (permanencia limitada, Art. 217).
+     - Galería N1: pico de CO/NO₂ post-voladura hace ~4,5 h: la lectura ya bajó,
+       pero el promedio de la jornada de NO₂ supera el TLV-TWA (Art. 39).
+     - Inclinado: detector multigas con calibración vencida → gases "no disponible".
      - Estación de bombeo: detector sin señal en los últimos minutos.
+
+   La evaluación (límites, exposición, temperatura efectiva) la hace
+   normativa.js; esta API solo produce los datos y arma las respuestas.
    ========================================================================== */
 
 (function () {
   const LATENCY_MS = 120;
   const MINUTE = 60 * 1000;
 
-  const BASE = { o2: 20.85, ch4: 0.06, co: 4, co2: 0.08, h2s: 0.1, no2: 0.05, temp: 22, hr: 80, air: 1.2, pm: 0.15 };
-  const NOISE = { o2: 0.06, ch4: 0.02, co: 1.2, co2: 0.02, h2s: 0.08, no2: 0.03, temp: 0.15, hr: 1.5, air: 0.06, pm: 0.04 };
+  const BASE = { o2: 20.85, ch4: 0.06, co: 4, co2: 0.08, h2s: 0.1, no: 0.6, no2: 0.05, so2: 0.02, temp: 22, hr: 80, air: 1.2, pm: 0.15 };
+  const NOISE = { o2: 0.06, ch4: 0.02, co: 1.2, co2: 0.02, h2s: 0.08, no: 0.2, no2: 0.02, so2: 0.008, temp: 0.15, tw: 0.15, te: 0.15, hr: 1.5, air: 0.06, pm: 0.04 };
+
+  /** Gases que mide el detector multigas fijo (Art. 46: CH₄, O₂, CO, H₂S, gases nitrosos y CO₂). */
+  const MULTIGAS_VARS = ["o2", "ch4", "co", "co2", "h2s", "no", "no2", "so2"];
+  /** Zonas cuyo detector multigas tiene la calibración vencida (días de vencida). */
+  const CAL_EXPIRED = { inclinado: 3 };
 
   const PROFILES = {
     "bocamina":  { o2: 20.9, ch4: 0.0, co: 1, temp: 18, hr: 72, air: 2.2, workers: 4 },
     "galeria-1": { co: 7, no2: 0.08, temp: 22, air: 1.6, workers: 6 },
-    "frente-1":  { ch4: 0.22, co: 10, co2: 0.18, temp: 26.8, hr: 88, air: 0.6, pm: 0.62, workers: 9 },
+    "frente-1":  { ch4: 0.22, co: 10, co2: 0.18, temp: 30.0, hr: 90, air: 0.6, pm: 0.62, workers: 9 },
     "inclinado": { ch4: 0.14, temp: 23, air: 1.0, workers: 2 },
     "galeria-2": { co: 6, temp: 24, air: 0.9, workers: 5 },
     "frente-2":  { o2: 20.4, ch4: 0.3, co: 8, co2: 0.22, temp: 25.4, hr: 90, air: 0.45, pm: 0.38, workers: 7 },
@@ -53,8 +64,42 @@
   const respond = (value) => new Promise((resolve) => setTimeout(() => resolve(clone(value)), LATENCY_MS));
   const round = (v, d) => Math.round(v * 10 ** d) / 10 ** d;
 
+  /**
+   * Temperatura de bulbo húmedo a partir de temperatura seca (°C) y humedad relativa (%),
+   * fórmula empírica de Stull (2011). SOLO para simular el sensor: en la mina la
+   * temperatura húmeda la mide un psicrómetro.
+   */
+  function wetBulb(t, rh) {
+    return t * Math.atan(0.151977 * Math.sqrt(rh + 8.313659)) + Math.atan(t + rh) - Math.atan(rh - 1.676331)
+      + 0.00391838 * rh ** 1.5 * Math.atan(0.023101 * rh) - 4.686035;
+  }
+
+  const cache = new Map();
+  let cacheMinute = null;
+
   /** Valor simulado de una variable en una zona para un minuto absoluto. */
   function valueAt(zoneId, key, minute, jitter = 0) {
+    if (jitter === 0) {
+      if (cacheMinute !== nowMinute()) { cache.clear(); cacheMinute = nowMinute(); }
+      const ck = `${zoneId}|${key}|${minute}`;
+      if (!cache.has(ck)) cache.set(ck, rawValueAt(zoneId, key, minute, 0));
+      return cache.get(ck);
+    }
+    return rawValueAt(zoneId, key, minute, jitter);
+  }
+
+  function rawValueAt(zoneId, key, minute, jitter) {
+    // Variables derivadas: se calculan con las mismas lecturas que las producen.
+    if (key === "tw") {
+      const t = valueAt(zoneId, "temp", minute, jitter);
+      const rh = valueAt(zoneId, "hr", minute, jitter);
+      return t == null || rh == null ? null : round(wetBulb(t, Math.min(99, Math.max(5, rh))), 2);
+    }
+    if (key === "te") {
+      const v = AS.norma.te(valueAt(zoneId, "tw", minute, jitter), valueAt(zoneId, "temp", minute, jitter), valueAt(zoneId, "air", minute, jitter));
+      return v == null ? null : round(v, 2);
+    }
+
     const zi = zoneIndex(zoneId);
     const vi = varIndex(key);
     const profile = PROFILES[zoneId] || {};
@@ -84,13 +129,38 @@
     return round(v, variable.decimals + 1);
   }
 
-  /** Estado de un valor según los umbrales configurados. */
-  function statusOf(key, value) {
-    if (value == null) return "off";
-    const t = AS.getThresholds(key);
-    if ((t.highCrit != null && value >= t.highCrit) || (t.lowCrit != null && value <= t.lowCrit)) return "crit";
-    if ((t.highWarn != null && value >= t.highWarn) || (t.lowWarn != null && value <= t.lowWarn)) return "warn";
-    return "ok";
+  /** Estado instantáneo de un valor en una zona (lógica en normativa.js). */
+  function statusOf(key, value, zoneId) {
+    return AS.evaluate(key, value, zoneId);
+  }
+
+  /** Inicio del turno vigente (turnos consecutivos desde las 06:00 de la duración configurada). */
+  function shiftStartMinute() {
+    const hours = AS.getCriterios().jornadaHoras || 8;
+    const now = new Date();
+    const six = new Date(now);
+    six.setHours(6, 0, 0, 0);
+    let start = six.getTime();
+    if (now.getTime() < start) start -= 24 * 3600 * 1000;
+    while (start + hours * 3600 * 1000 <= now.getTime()) start += hours * 3600 * 1000;
+    return Math.floor(start / MINUTE);
+  }
+
+  /** Promedios de exposición de un gas en una zona: jornada en curso y últimos 15 min. */
+  function exposureOf(zoneId, key) {
+    const m0 = nowMinute();
+    const from = shiftStartMinute();
+    const avg = (a, b) => {
+      let sum = 0, n = 0;
+      for (let m = a; m <= b; m++) {
+        const v = valueAt(zoneId, key, m);
+        if (v != null) { sum += v; n++; }
+      }
+      return n ? { v: sum / n, n } : { v: null, n: 0 };
+    };
+    const shift = avg(from, m0);
+    const stel = avg(Math.max(from, m0 - 14), m0);
+    return AS.evaluateExposure(key, { twa: shift.v, stel: stel.n >= 5 ? stel.v : null, minutos: shift.n });
   }
 
   /** Tendencia por regresión lineal (unidades/min) y minutos estimados hasta el límite de alarma. */
@@ -110,7 +180,7 @@
     const sxx = pts.reduce((a, p) => a + p[0] * p[0], 0);
     const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx || 1);
     const last = pts[n - 1][1];
-    const t = AS.getThresholds(key);
+    const t = AS.getThresholds(key, zoneId);
 
     let etaMin = null;
     if (t.highCrit != null && slope > 0 && last < t.highCrit) etaMin = (t.highCrit - last) / slope;
@@ -134,20 +204,43 @@
     const values = {};
     const status = {};
     const trends = {};
+    const quality = {};
+    const exposure = {};
+    const calExpired = CAL_EXPIRED[zoneId] != null;
+    const jitterOf = (i) => (hash(seconds * 17 + i * 3 + zoneIndex(zoneId) * 101) - 0.5) * 0.6;
+
     AS.VARIABLES.forEach((v, i) => {
-      const jitter = (hash(seconds * 17 + i * 3 + zoneIndex(zoneId) * 101) - 0.5) * 0.6;
-      values[v.key] = valueAt(zoneId, v.key, m, jitter);
-      status[v.key] = statusOf(v.key, values[v.key]);
-      trends[v.key] = trendOf(zoneId, v.key);
+      // Las derivadas se recalculan con las lecturas instantáneas (mismo jitter que sus entradas).
+      values[v.key] = v.key === "tw" || v.key === "te" ? null : valueAt(zoneId, v.key, m, jitterOf(i));
     });
+    if (values.temp != null && values.hr != null) values.tw = round(wetBulb(values.temp, Math.min(99, Math.max(5, values.hr))), 2);
+    values.te = AS.norma.te(values.tw, values.temp, values.air);
+    if (values.te != null) values.te = round(values.te, 2);
+
+    AS.VARIABLES.forEach((v) => {
+      const k = v.key;
+      quality[k] = values[k] == null ? "sin_senal" : "valida";
+      if (calExpired && MULTIGAS_VARS.includes(k) && values[k] != null) quality[k] = "calibracion_vencida";
+      // Una lectura sin señal o con calibración vencida nunca se muestra como segura.
+      status[k] = quality[k] === "valida" ? statusOf(k, values[k], zoneId) : "off";
+      trends[k] = trendOf(zoneId, k);
+      if (AS.VLP[k] && quality[k] === "valida") exposure[k] = exposureOf(zoneId, k);
+    });
+
     const offline = Object.values(values).every((v) => v == null);
+    const statuses = Object.values(status).concat(Object.values(exposure).map((e) => e.status));
     return {
       zoneId,
       ts: offline ? (m - OFFLINE_MINUTES) * MINUTE : Date.now(),
       values,
       status,
       trends,
-      zoneStatus: offline ? "off" : worstStatus(Object.values(status)),
+      quality,
+      exposure,
+      permanencia: AS.norma.permanencia(values.te),
+      calibrationExpired: calExpired ? CAL_EXPIRED[zoneId] : null,
+      offline,
+      zoneStatus: offline ? "off" : worstStatus(statuses),
       workers: (PROFILES[zoneId] || {}).workers || 0,
     };
   }
@@ -164,16 +257,16 @@
         id: `MG-${code}-01`,
         type: "Detector multigas fijo",
         zoneId: z.id,
-        vars: ["o2", "ch4", "co", "co2", "h2s", "no2"],
+        vars: MULTIGAS_VARS,
         power: "Red + batería respaldo",
         battery: z.id === OFFLINE_ZONE ? 4 : 70 + Math.round(hash(i + 5) * 30),
-        calDays: z.id === "inclinado" ? -3 : 5 + Math.round(hash(i + 9) * 80),
+        calDays: CAL_EXPIRED[z.id] != null ? -CAL_EXPIRED[z.id] : 5 + Math.round(hash(i + 9) * 80),
       });
       devices.push({
         id: `TH-${code}-01`,
-        type: "Sensor temperatura / humedad",
+        type: "Psicrómetro (temperatura seca y húmeda) / humedad",
         zoneId: z.id,
-        vars: ["temp", "hr"],
+        vars: ["temp", "tw", "hr"],
         power: "Batería",
         battery: 40 + Math.round(hash(i + 21) * 60),
         calDays: 30 + Math.round(hash(i + 33) * 150),
@@ -232,7 +325,7 @@
 
     AS.ZONES.forEach((z) => {
       const r = currentReading(z.id);
-      if (r.zoneStatus === "off") {
+      if (r.offline) {
         alerts.push({
           id: `sensor-${z.id}`,
           severity: "off",
@@ -248,48 +341,113 @@
         return;
       }
       AS.VARIABLES.forEach((v) => {
-        const s = r.status[v.key];
-        const t = AS.getThresholds(v.key);
-        const value = r.values[v.key];
-        if (s === "crit" || s === "warn") {
-          const limit = s === "crit" ? (t.highCrit != null && value >= t.highCrit ? t.highCrit : t.lowCrit) : (t.highWarn != null && value >= t.highWarn ? t.highWarn : t.lowWarn);
-          const low = t.lowWarn != null && value <= (t.lowWarn ?? -Infinity);
-          alerts.push({
-            id: `umbral-${z.id}-${v.key}`,
+        const k = v.key;
+        const s = r.status[k];
+        const value = r.values[k];
+        const t = AS.getThresholds(k, z.id);
+        const protocol = AS.PROTOCOLS[k] ? k : "default";
+
+        if (r.quality[k] === "valida" && (s === "crit" || s === "warn")) {
+          const alert = {
+            id: `umbral-${z.id}-${k}`,
             severity: s,
             type: "Umbral superado",
             zoneId: z.id,
-            varKey: v.key,
+            varKey: k,
             value,
-            limit,
-            title: `${v.label} ${low ? "por debajo" : "por encima"} del límite de ${s === "crit" ? "alarma" : "precaución"}`,
-            detail: `${AS.fmt.value(v.key, value)} (límite ${AS.fmt.value(v.key, limit)})`,
-            ts: Date.now() - 60 * 1000 * (2 + (v.key.length % 5)),
-            protocol: AS.PROTOCOLS[v.key] ? v.key : "default",
+            ts: Date.now() - 60 * 1000 * (2 + (k.length % 5)),
+            protocol,
+            active: true,
+          };
+
+          if (k === "te") {
+            const p = r.permanencia;
+            alert.limit = s === "crit" ? t.highCrit : t.highWarn;
+            alert.ref = s === "crit" ? "Art. 218" : "Art. 217";
+            alert.title = s === "crit"
+              ? `Temperatura efectiva ${AS.fmt.value(k, value)}: solo cuadrillas de salvamento`
+              : `Temperatura efectiva ${AS.fmt.value(k, value)}: permanencia máxima ${p.texto}`;
+            alert.detail = `te = 0,7·Th + 0,3·Ts − V = 0,7·${AS.fmt.number(r.values.tw, 1)} + 0,3·${AS.fmt.number(r.values.temp, 1)} − ${AS.fmt.number(r.values.air, 2)}. ${alert.ref}.`;
+          } else {
+            const low = (t.lowCrit != null && value < t.lowCrit) || (t.lowWarn != null && value < t.lowWarn && !(t.highWarn != null && value >= t.highWarn));
+            alert.limit = s === "crit" ? (low ? t.lowCrit : t.highCrit) : (low ? t.lowWarn : t.highWarn);
+            alert.ref = s === "crit" ? t.refCrit : t.refWarn;
+            alert.title = `${v.label} ${low ? "por debajo" : "por encima"} del ${s === "crit" ? "límite de alarma" : "umbral de precaución"}`;
+            if (k === "ch4" && s === "crit") {
+              alert.title = value > AS.CH4_SALVAMENTO
+                ? `Metano sobre ${AS.fmt.number(AS.CH4_SALVAMENTO, 1)} %: solo personal de salvamento`
+                : "Metano en el límite del Art. 53: suspender labores y evacuar";
+            }
+            alert.detail = `${AS.fmt.value(k, value)} (${s === "crit" ? "límite" : "umbral"} ${AS.fmt.value(k, alert.limit)}). ${alert.ref}.`;
+          }
+          alerts.push(alert);
+        }
+
+        const ex = r.exposure[k];
+        if (ex && ex.status !== "ok") {
+          const parts = [];
+          if (ex.twaLim != null) parts.push(`promedio de jornada ${AS.fmt.value(k, ex.twa)} (TLV-TWA ${AS.fmt.value(k, ex.twaLim)}${ex.fc < 1 ? `, corregido por jornada de ${AS.getCriterios().jornadaHoras} h` : ""})`);
+          if (ex.stelLim != null && ex.stel != null) parts.push(`promedio 15 min ${AS.fmt.value(k, ex.stel)} (TLV-STEL ${AS.fmt.value(k, ex.stelLim)})`);
+          alerts.push({
+            id: `exposicion-${z.id}-${k}`,
+            severity: ex.status,
+            type: "Exposición de jornada",
+            zoneId: z.id,
+            varKey: k,
+            value: ex.twa,
+            limit: ex.twaLim,
+            ref: ex.status === "crit" ? "Art. 39" : "Nivel de acción (criterio interno)",
+            title: ex.causas.includes("stel")
+              ? `${v.label}: exposición de 15 min supera el TLV-STEL`
+              : ex.status === "crit"
+                ? `${v.label}: el promedio de la jornada supera el TLV-TWA`
+                : `${v.label}: el promedio de la jornada llegó al nivel de acción`,
+            detail: `${parts.join(" · ")}. ${ex.status === "crit" ? "Art. 39" : `Nivel de acción: ${AS.getCriterios().accionPctTwa} % del TLV-TWA (criterio interno)`}.`,
+            ts: Date.now() - 60 * 1000 * 3,
+            protocol: "exposicion",
             active: true,
           });
         }
-        const tr = r.trends[v.key];
-        if (s !== "crit" && tr.direction !== "flat" && tr.etaMin != null && tr.etaMin <= 30) {
+
+        const tr = r.trends[k];
+        if (r.quality[k] === "valida" && s !== "crit" && tr.direction !== "flat" && tr.etaMin != null && tr.etaMin <= 30) {
           alerts.push({
-            id: `tendencia-${z.id}-${v.key}`,
+            id: `tendencia-${z.id}-${k}`,
             severity: "warn",
             type: "Tendencia predictiva",
             zoneId: z.id,
-            varKey: v.key,
+            varKey: k,
             value,
+            limit: tr.direction === "up" ? t.highCrit : t.lowCrit,
+            ref: t.refCrit,
             title: `${v.label} en ${tr.direction === "up" ? "ascenso" : "descenso"}: alcanzaría la alarma en ~${tr.etaMin} min`,
-            detail: `Ritmo ${tr.slope > 0 ? "+" : ""}${tr.slope} ${v.unit}/min en los últimos 15 min.`,
+            detail: `Ritmo ${tr.slope > 0 ? "+" : ""}${tr.slope} ${v.unit}/min en los últimos 15 min. Límite: ${AS.fmt.value(k, tr.direction === "up" ? t.highCrit : t.lowCrit)} (${t.refCrit}).`,
             ts: Date.now() - 60 * 1000,
-            protocol: AS.PROTOCOLS[v.key] ? v.key : "default",
+            protocol,
             active: true,
           });
         }
       });
+
+      if (r.calibrationExpired) {
+        alerts.push({
+          id: `cal-gases-${z.id}`,
+          severity: "off",
+          type: "Lectura no válida",
+          zoneId: z.id,
+          varKey: null,
+          title: "Gases sin lectura válida: detector con calibración vencida",
+          detail: `La calibración venció hace ${r.calibrationExpired} días. Las lecturas de gases se muestran como "no disponible", nunca como seguras (Arts. 46 y 51). Medir con detector portátil calibrado.`,
+          ts: Date.now() - 5 * 3600 * 1000,
+          protocol: "sensor",
+          active: true,
+        });
+      }
     });
 
     buildDevices()
-      .filter((d) => d.calDays != null && d.calDays < 0)
+      // El multigas con calibración vencida ya genera la alerta "Lectura no válida" de su zona.
+      .filter((d) => d.calDays != null && d.calDays < 0 && !(d.type === "Detector multigas fijo" && CAL_EXPIRED[d.zoneId] != null))
       .forEach((d) => {
         alerts.push({
           id: `cal-${d.id}`,
@@ -309,14 +467,15 @@
     alerts.push(
       {
         id: `hist-co-galeria-1-${m - 270}`,
-        severity: "crit",
+        severity: "warn",
         type: "Umbral superado",
         zoneId: "galeria-1",
         varKey: "co",
         value: 61,
-        limit: 50,
-        title: "Monóxido de carbono por encima del límite de alarma",
-        detail: "Posterior a voladura programada. Normalizado tras 38 min de ventilación.",
+        limit: 25,
+        ref: "Lectura ≥ 100 % del TLV-TWA (criterio interno)",
+        title: "Monóxido de carbono por encima del umbral de precaución",
+        detail: "61 ppm posterior a voladura programada (TLV-TWA 25 ppm, Art. 39). Normalizado tras 38 min de ventilación.",
         ts: (m - 270) * MINUTE,
         protocol: "co",
         active: false,
@@ -328,22 +487,24 @@
         zoneId: "galeria-1",
         varKey: "no2",
         value: 3.5,
-        limit: 3,
+        limit: 1,
+        ref: "Lectura ≥ 5 × TLV-TWA (criterio de excursiones ACGIH, al que remite el Art. 39)",
         title: "Dióxido de nitrógeno por encima del límite de alarma",
-        detail: "Gases de voladura. Reingreso autorizado por supervisor tras medición.",
+        detail: "3,5 ppm por gases de voladura (5 × TLV-TWA = 1 ppm). Reingreso autorizado por supervisor tras medición.",
         ts: (m - 272) * MINUTE,
         protocol: "default",
         active: false,
       },
       {
         id: `hist-air-frente-1-${m - 900}`,
-        severity: "warn",
+        severity: "crit",
         type: "Umbral superado",
         zoneId: "frente-1",
         varKey: "air",
         value: 0.28,
         limit: 0.3,
-        title: "Velocidad del aire por debajo del límite de precaución",
+        ref: "Art. 56 — Ventilación auxiliar: vía en carbón",
+        title: "Velocidad del aire por debajo del mínimo del Art. 56",
         detail: "Manga de ventilación desacoplada. Corregido por mantenimiento.",
         ts: (m - 900) * MINUTE,
         protocol: "air",
@@ -436,6 +597,9 @@
     addManualReading(reading) {
       const list = AS.storage.get("manual", []);
       const row = Object.assign({ ts: Date.now(), source: "Manual (contingencia)" }, reading);
+      // Temperatura efectiva (Art. 217) si se registraron sus tres entradas.
+      const v = row.values || {};
+      if (v.te == null && v.tw != null && v.temp != null && v.air != null) v.te = Math.round(AS.norma.te(v.tw, v.temp, v.air) * 100) / 100;
       list.push(row);
       AS.storage.set("manual", list);
       return respond(row);

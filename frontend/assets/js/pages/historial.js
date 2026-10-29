@@ -15,15 +15,16 @@
   const rowStatus = (r) =>
     Object.entries(r.values)
       .filter(([, v]) => v != null)
-      .map(([k, v]) => AS.api.statusOf(k, v))
+      .map(([k, v]) => AS.api.statusOf(k, v, r.zoneId))
       .reduce((w, s) => (AS.STATUS_RANK[s] > AS.STATUS_RANK[w] ? s : w), "ok");
 
   function renderSummary() {
-    AS.qs("[data-summary]").innerHTML = AS.VARIABLES.filter((v) => v.key !== "hr")
+    AS.qs("[data-summary]").innerHTML = AS.VARIABLES.filter((v) => v.role !== "input")
       .map((v) => {
-        const vals = rows.map((r) => r.values[v.key]).filter((x) => x != null);
+        const pairs = rows.filter((r) => r.values[v.key] != null);
+        const vals = pairs.map((r) => r.values[v.key]);
         if (!vals.length) return "";
-        const out = vals.filter((x) => AS.api.statusOf(v.key, x) !== "ok").length;
+        const out = pairs.filter((r) => AS.api.statusOf(v.key, r.values[v.key], r.zoneId) !== "ok").length;
         const pct = Math.round((out / vals.length) * 100);
         const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
         const status = pct > 10 ? "crit" : pct > 0 ? "warn" : "ok";
@@ -48,7 +49,7 @@
           .map((r) => {
             const zone = AS.getZone(r.zoneId);
             const cells = AS.VARIABLES.map((v) => {
-              const s = r.values[v.key] == null ? "ok" : AS.api.statusOf(v.key, r.values[v.key]);
+              const s = r.values[v.key] == null ? "ok" : AS.api.statusOf(v.key, r.values[v.key], r.zoneId);
               return `<td class="num ${s === "crit" ? "cell-crit" : s === "warn" ? "cell-warn" : ""}">${AS.fmt.value(v.key, r.values[v.key], false)}</td>`;
             }).join("");
             const manual = r.source !== "Sensor fijo";

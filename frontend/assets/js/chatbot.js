@@ -157,7 +157,7 @@
 
   function zoneLine(z) {
     const r = z.reading;
-    if (r.zoneStatus === "off") return `${AS.badge("off")} La zona no está siendo monitoreada; última lectura ${AS.fmt.ago(r.ts)}.`;
+    if (r.offline) return `${AS.badge("off")} La zona no está siendo monitoreada; última lectura ${AS.fmt.ago(r.ts)}.`;
     const bad = AS.VARIABLES.filter((v) => r.status[v.key] === "warn" || r.status[v.key] === "crit");
     const detail = (bad.length ? bad : AS.VARIABLES.filter((v) => AS.KEY_VARIABLES.includes(v.key)))
       .map((v) => `${esc(v.short)} ${val(v.key, r.values[v.key])}`)
@@ -172,7 +172,7 @@
         if (key) {
           const v = z.reading.values[key];
           if (v == null) return `<strong>${esc(z.name)}</strong>: sin lectura de ${esc(varLabel(key).toLowerCase())}.`;
-          return `<strong>${esc(z.name)}</strong>: ${esc(varLabel(key))} ${val(key, v)} ${AS.badge(z.reading.status[key])}, ${trendText(z.reading.trends[key])}. Límite: ${esc(AS.fmt.limits(key))}.`;
+          return `<strong>${esc(z.name)}</strong>: ${esc(varLabel(key))} ${val(key, v)} ${AS.badge(z.reading.status[key])}, ${trendText(z.reading.trends[key])}. Límite: ${esc(AS.fmt.limits(key, z.id))}.`;
         }
         return `<strong>${link("zona.html?id=" + z.id, z.name)}</strong>: ${zoneLine(z)}`;
       });
@@ -284,14 +284,28 @@
     const t = AS.getThresholds(key);
     const f = (x) => AS.fmt.number(x, v.decimals);
     const rows = [];
-    if (t.lowCrit != null) rows.push(`Alarma si baja de ${f(t.lowCrit)} ${esc(v.unit)}`);
-    if (t.lowWarn != null) rows.push(`Precaución si baja de ${f(t.lowWarn)} ${esc(v.unit)}`);
-    if (t.highWarn != null) rows.push(`Precaución desde ${f(t.highWarn)} ${esc(v.unit)}`);
-    if (t.highCrit != null) rows.push(`Alarma desde ${f(t.highCrit)} ${esc(v.unit)}`);
+    if (key === "ch4") {
+      Object.values(AS.LABORES).forEach((l) => rows.push(`${esc(l.label)}: suspender labores y evacuar al alcanzar ${f(l.ch4)} % (${esc(l.ref)})`));
+      rows.push(`Por encima de ${f(AS.CH4_SALVAMENTO)} %: solo personal de salvamento (Art. 53, par. 1)`);
+      rows.push(`Precaución (criterio interno): ${AS.getCriterios().ch4WarnPct} % del límite del sitio`);
+    } else if (key === "te") {
+      AS.TE_TABLA.forEach((row) => rows.push(`Te ${row.te} °C: ${esc(row.texto)}`));
+      rows.push("Te = 0,7 × temperatura húmeda + 0,3 × temperatura seca − velocidad del aire (Art. 217)");
+    } else if (AS.VLP[key]) {
+      const vlp = AS.VLP[key];
+      rows.push(`Valores límite del Art. 39: ${esc(vlp.ppm)}. Se evalúan como promedio de jornada (TWA) y de 15 min (STEL), no como lectura instantánea.`);
+      rows.push(`Precaución instantánea (criterio interno): ${f(t.highWarn)} ${esc(v.unit)} · Alarma instantánea: ${f(t.highCrit)} ${esc(v.unit)} (${esc(t.refCrit)})`);
+    } else {
+      if (t.lowCrit != null) rows.push(`Alarma si baja de ${f(t.lowCrit)} ${esc(v.unit)} (${esc(t.refCrit)})`);
+      if (t.lowWarn != null) rows.push(`Precaución si baja de ${f(t.lowWarn)} ${esc(v.unit)} (criterio interno)`);
+      if (t.highWarn != null) rows.push(`Precaución desde ${f(t.highWarn)} ${esc(v.unit)} (criterio interno)`);
+      if (t.highCrit != null) rows.push(`Alarma ${key === "o2" || key === "air" ? "si supera" : "desde"} ${f(t.highCrit)} ${esc(v.unit)} (${esc(t.refCrit)})`);
+      if (key === "air") rows.push("El mínimo y el máximo dependen del tipo de vía de cada zona (Art. 56).");
+    }
     return { html: `<p>Límites de ${esc(v.label.toLowerCase())}:</p>` + list(rows) + limitsNote(), chips: ["¿Qué alertas hay?"] };
   }
 
-  const limitsNote = () => '<p class="muted">Son valores de referencia del prototipo; Ingeniería de Minas debe validarlos contra el Decreto 1886 de 2015.</p>';
+  const limitsNote = () => '<p class="muted">Fuente: Parámetros normativos 1 y 2 (Decreto 1886 de 2015, modificado por el Decreto 944 de 2022). Los umbrales de precaución son criterios internos, no límites legales.</p>';
 
   function replyProtocol(d, zoneIds, key) {
     let items = d.alerts.filter((a) => a.active);
