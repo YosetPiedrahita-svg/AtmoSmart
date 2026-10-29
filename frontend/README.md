@@ -95,7 +95,7 @@ cada uno con su propio carácter (se prueban en **Límites y configuración → 
 | Sin señal y mantenimiento | No suenan | No vibran | — |
 
 - Preferencias (guardadas en el navegador): sonido, vibración y "avisar también las alertas de precaución" (activas por defecto).
-- Al abrir la sesión, las alertas de precaución que ya existían no suenan; una alarma sin reconocer sí.
+- Al abrir la sesión se avisa también de lo que ya existía (alarmas y precauciones sin reconocer).
 - El navegador exige un gesto del usuario para reproducir audio: el primer clic o toque en la página lo activa.
 - La vibración solo existe en móviles/tablets Android; en computador o iPhone el aviso es sonoro y visual (toast).
 

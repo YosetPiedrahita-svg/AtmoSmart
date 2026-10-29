@@ -25,8 +25,9 @@
        clic o toque en la página activa el sonido.
      - La vibración solo existe en móviles/tablets Android (no en iPhone ni
        en computador); en los demás el aviso es solo sonoro y visual.
-     - Las alertas que ya existían al abrir la sesión no suenan de nuevo al
-       cambiar de página; una alarma sin reconocer sí se vuelve a escuchar.
+     - Al abrir la sesión se avisa también de lo que ya existía (alarmas y
+       precauciones sin reconocer); al cambiar de página las precauciones no
+       se repiten, y una alarma sin silenciar sigue sonando.
    ========================================================================== */
 
 (function () {
@@ -63,6 +64,7 @@
   let ctx = null;
   let timer = null;
   let blockedNotified = false;
+  let retryWarn = false; // precaución pendiente de sonar cuando el navegador permita audio
   let state = readState();
 
   /* ---------- Preferencias ---------- */
@@ -86,6 +88,10 @@
   function unlock() {
     const c = getCtx();
     if (c && c.state === "suspended") c.resume().catch(() => {});
+    if (retryWarn && c) {
+      retryWarn = false;
+      c.resume().then(() => playSound(PROFILES.warn, true)).catch(() => {});
+    }
   }
   ["pointerdown", "keydown", "touchstart"].forEach((ev) => document.addEventListener(ev, unlock, { passive: true }));
 
@@ -273,7 +279,6 @@
       // Solo alarma y precaución, activas y sin reconocer. "off" e "info" nunca avisan.
       const pending = alerts.filter((a) => a.active && !a.ack && (a.severity === "crit" || (a.severity === "warn" && p.warn)));
 
-      const baseline = state === null; // primera lectura de la sesión
       const seen = state ? state.seen : {};
       const next = {};
       const fresh = [];
@@ -295,13 +300,16 @@
       // Alarma: tarjeta fija + sirena continua (la gestiona loop()). Precaución: toast y sonido una sola vez.
       if (fresh.some((a) => a.severity === "crit")) lastLoop = 0; // alarma nueva: suena de inmediato
       if (!pendingCrit.length) lastLoop = 0;
-      const warns = fresh.filter((a) => a.severity === "warn" && !baseline);
+      // Precaución: al abrir la sesión también avisa por las que ya existían.
+      const warns = fresh.filter((a) => a.severity === "warn");
       if (warns.length) {
-        fire("warn");
+        const r = fire("warn", { quiet: true });
+        if (p.sound && !r.sound) retryWarn = true; // audio bloqueado: suena con el primer clic
         warns.slice(0, 2).forEach((a) => {
           const zone = AS.getZone(a.zoneId);
           AS.toast(`<strong>${PROFILES.warn.label}</strong> · ${AS.escape(zone ? zone.name : a.zoneId)}: ${AS.escape(a.title)}`, "warn", 6000);
         });
+        if (warns.length > 2) AS.toast(`y ${warns.length - 2} precaución${warns.length - 2 > 1 ? "es" : ""} más · ver Alertas`, "warn", 6000);
       }
       loop();
     });
