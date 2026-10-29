@@ -652,6 +652,41 @@ a.card:hover { text-decoration: none; box-shadow: var(--shadow-md); border-color
 
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
 
+/* ---------- Tarjeta de alarma ---------- */
+
+.alarm-region {
+  position: fixed;
+  top: calc(var(--space-4) + 56px);
+  right: var(--space-4);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(380px, calc(100vw - 32px));
+}
+.alarm-region:empty { display: none; }
+.alarm-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--status-crit-soft);
+  color: var(--status-crit-ink);
+  border: 2px solid var(--status-crit);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  animation: toast-in var(--dur) var(--ease), alarm-pulse 1.2s ease-in-out infinite;
+}
+.alarm-card.is-muted { animation: none; }
+.alarm-card-head { display: flex; align-items: center; gap: var(--space-2); }
+.alarm-card-title { font-weight: 600; }
+.alarm-card-hint { color: inherit; opacity: 0.85; }
+.alarm-card-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.alarm-more { font-size: var(--text-sm); text-align: right; }
+
+@keyframes alarm-pulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-crit) 35%, transparent), var(--shadow-lg); } }
+@media (prefers-reduced-motion: reduce) { .alarm-card { animation: none; } }
+
 /* ---------- Varios ---------- */
 
 .empty {

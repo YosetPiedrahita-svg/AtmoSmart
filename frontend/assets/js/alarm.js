@@ -3,8 +3,10 @@
 
    Solo dos niveles avisan; cada uno con su propio carácter:
 
-     Alarma (crit)      Sirena de dos tonos, aguda, rápida y fuerte (~2,5 s).
-                        Se repite cada 20 s mientras siga sin reconocerse.
+     Alarma (crit)      Tarjeta fija en pantalla + sirena de dos tonos, aguda,
+                        rápida y fuerte, que suena sin parar hasta que se pulse
+                        "Silenciar" en la tarjeta. Silenciar no cierra la alarma:
+                        la tarjeta sigue hasta que se reconozca en Alertas.
                         Vibración larga e insistente.
      Precaución (warn)  Dos tonos suaves y graves, una sola vez al aparecer
                         (o al escalar). Vibración corta (doble pulso).
@@ -30,7 +32,7 @@
 (function () {
   "use strict";
 
-  const POLL_MS = 5000;
+  const POLL_MS = 2000;
   const STATE_KEY = "atmosmart:alarm-state";
   const RANK = { warn: 1, crit: 2 };
 
@@ -43,7 +45,7 @@
       gapMs: 80,
       pulses: 8,
       gain: 0.5,
-      repeatMs: 20000, // insiste hasta que se reconozca
+      loopGapMs: 500, // pausa entre repeticiones: suena sin parar hasta silenciar o reconocer
       vibrate: [500, 120, 500, 120, 500, 120, 500],
     },
     warn: {
@@ -54,7 +56,6 @@
       gapMs: 160,
       pulses: 2,
       gain: 0.18,
-      repeatMs: null, // una sola vez
       vibrate: [160, 120, 160],
     },
   };
@@ -88,12 +89,12 @@
   }
   ["pointerdown", "keydown", "touchstart"].forEach((ev) => document.addEventListener(ev, unlock, { passive: true }));
 
-  function playSound(profile) {
+  function playSound(profile, quiet) {
     const c = getCtx();
     if (!c) return false;
     if (c.state !== "running") {
       c.resume().catch(() => {});
-      if (!blockedNotified) {
+      if (!blockedNotified && !quiet) {
         blockedNotified = true;
         AS.toast("El navegador bloqueó el sonido. Haga clic en cualquier parte de la página para activarlo.", "warn", 8000);
       }
@@ -128,11 +129,11 @@
   }
 
   /** Emite el aviso del nivel `sev` respetando las preferencias (salvo `force`, para pruebas). */
-  function fire(sev, { force = false } = {}) {
+  function fire(sev, { force = false, quiet = false } = {}) {
     const p = prefs();
     const profile = PROFILES[sev];
     return {
-      sound: force || p.sound ? playSound(profile) : false,
+      sound: force || p.sound ? playSound(profile, quiet) : false,
       vibration: force || p.vibrate ? vibrate(profile) : false,
     };
   }
@@ -168,6 +169,102 @@
     }
   }
 
+  /* ---------- Tarjeta de alarma ---------- */
+
+  let pendingCrit = []; // alarmas activas sin reconocer (última lectura)
+  let lastLoop = 0;
+  let loopTimer = null;
+  const MAX_CARDS = 3;
+
+  function region() {
+    let r = AS.qs("[data-alarm-cards]");
+    if (!r) {
+      r = document.createElement("div");
+      r.className = "alarm-region";
+      r.setAttribute("data-alarm-cards", "");
+      document.body.appendChild(r);
+    }
+    return r;
+  }
+
+  function isMuted(id) {
+    return !!(state && state.muted && state.muted[id]);
+  }
+
+  function mute(id) {
+    state = state || { seen: {}, muted: {} };
+    state.muted = state.muted || {};
+    state.muted[id] = true;
+    writeState();
+    if (navigator.vibrate) navigator.vibrate(0); // corta la vibración en curso
+    if (ctx && !pendingCrit.some((a) => !isMuted(a.id))) ctx.suspend().catch(() => {}); // corta el sonido en curso
+    render();
+  }
+
+  function render() {
+    const r = region();
+    const shown = pendingCrit.slice(0, MAX_CARDS);
+    const keep = new Set(shown.map((a) => a.id));
+    AS.qsa("[data-alarm-id]", r).forEach((el) => { if (!keep.has(el.dataset.alarmId)) el.remove(); });
+
+    shown.forEach((a) => {
+      const muted = isMuted(a.id);
+      let el = AS.qs(`[data-alarm-id="${a.id}"]`, r);
+      if (!el) {
+        const zone = AS.getZone(a.zoneId);
+        el = document.createElement("div");
+        el.className = "alarm-card";
+        el.dataset.alarmId = a.id;
+        el.setAttribute("role", "alert");
+        el.innerHTML = `
+          <div class="alarm-card-head">${AS.icon("alert")}<strong>ALARMA · ${AS.escape(zone ? zone.name : a.zoneId)}</strong></div>
+          <div class="alarm-card-title">${AS.escape(a.title)}</div>
+          <div class="alarm-card-hint muted" data-alarm-hint></div>
+          <div class="alarm-card-actions">
+            <button class="btn btn-danger" type="button" data-alarm-mute>Silenciar</button>
+            <a class="btn btn-secondary" href="alertas.html">Ver y reconocer</a>
+          </div>`;
+        AS.qs("[data-alarm-mute]", el).addEventListener("click", () => mute(a.id));
+        r.appendChild(el);
+      }
+      el.classList.toggle("is-muted", muted);
+      const btn = AS.qs("[data-alarm-mute]", el);
+      btn.disabled = muted;
+      btn.textContent = muted ? "Silenciada" : "Silenciar";
+      const hint = AS.qs("[data-alarm-hint]", el);
+      if (muted) hint.textContent = "Sin sonido. La alarma sigue activa hasta que se reconozca.";
+      else if (ctx && ctx.state !== "running") hint.textContent = "Haga clic en la página para activar el sonido.";
+      else hint.textContent = "Suena hasta que se silencie o se reconozca.";
+    });
+
+    let more = AS.qs("[data-alarm-more]", r);
+    const extra = pendingCrit.length - shown.length;
+    if (extra > 0) {
+      if (!more) {
+        more = document.createElement("a");
+        more.className = "alarm-more";
+        more.href = "alertas.html";
+        more.setAttribute("data-alarm-more", "");
+        r.appendChild(more);
+      }
+      more.textContent = `y ${extra} alarma${extra > 1 ? "s" : ""} más · ver Alertas`;
+    } else if (more) more.remove();
+  }
+
+  /** Mientras haya una alarma sin silenciar ni reconocer, la sirena se repite sin pausa larga. */
+  function loop() {
+    if (!pendingCrit.some((a) => !isMuted(a.id))) return;
+    const profile = PROFILES.crit;
+    const cycle = profile.pulses * (profile.pulseMs + profile.gapMs) + profile.loopGapMs;
+    const now = Date.now();
+    if (now - lastLoop < cycle) return;
+    const c = getCtx();
+    if (c && c.state === "suspended") c.resume().catch(() => {});
+    const r = fire("crit", { quiet: true });
+    if (r.sound || r.vibration) lastLoop = now;
+    render(); // actualiza el aviso de "haga clic" si el navegador aún bloquea el audio
+  }
+
   /* ---------- Vigilancia de alertas ---------- */
 
   function check() {
@@ -186,26 +283,27 @@
         if (prev == null || RANK[prev] < RANK[a.severity]) fresh.push(a);
       });
 
-      // Al abrir la sesión, lo que ya estaba en precaución no suena; una alarma sí.
-      const toAnnounce = fresh.filter((a) => !baseline || a.severity === "crit").sort((a, b) => RANK[b.severity] - RANK[a.severity]);
-      let lastCrit = state ? state.lastCrit || 0 : 0;
-      const now = Date.now();
+      // Silencios: solo se conservan los de alarmas que siguen pendientes
+      const muted = {};
+      pending.forEach((a) => { if (a.severity === "crit" && state && state.muted && state.muted[a.id]) muted[a.id] = true; });
 
-      if (toAnnounce.length) {
-        const top = toAnnounce[0].severity;
-        fire(top);
-        if (top === "crit") lastCrit = now;
-        toAnnounce.slice(0, 2).forEach((a) => {
-          const zone = AS.getZone(a.zoneId);
-          AS.toast(`<strong>${PROFILES[a.severity].label}</strong> · ${AS.escape(zone ? zone.name : a.zoneId)}: ${AS.escape(a.title)}`, a.severity, a.severity === "crit" ? 10000 : 6000);
-        });
-      } else if (pending.some((a) => a.severity === "crit") && now - lastCrit >= PROFILES.crit.repeatMs) {
-        fire("crit"); // la alarma insiste hasta que alguien la reconozca
-        lastCrit = now;
-      }
-
-      state = { seen: next, lastCrit };
+      pendingCrit = pending.filter((a) => a.severity === "crit");
+      state = { seen: next, muted };
       writeState();
+      render();
+
+      // Alarma: tarjeta fija + sirena continua (la gestiona loop()). Precaución: toast y sonido una sola vez.
+      if (fresh.some((a) => a.severity === "crit")) lastLoop = 0; // alarma nueva: suena de inmediato
+      if (!pendingCrit.length) lastLoop = 0;
+      const warns = fresh.filter((a) => a.severity === "warn" && !baseline);
+      if (warns.length) {
+        fire("warn");
+        warns.slice(0, 2).forEach((a) => {
+          const zone = AS.getZone(a.zoneId);
+          AS.toast(`<strong>${PROFILES.warn.label}</strong> · ${AS.escape(zone ? zone.name : a.zoneId)}: ${AS.escape(a.title)}`, "warn", 6000);
+        });
+      }
+      loop();
     });
   }
 
@@ -213,13 +311,17 @@
     if (timer) return;
     check().catch(() => {});
     timer = setInterval(() => check().catch(() => {}), POLL_MS);
+    loopTimer = setInterval(loop, 500);
   }
 
-  /** Reinicia la memoria de alertas vistas (útil para pruebas). */
+  /** Reinicia la memoria de alertas vistas y silencios (útil para pruebas). */
   function reset() {
     state = null;
+    pendingCrit = [];
+    lastLoop = 0;
     try { sessionStorage.removeItem(STATE_KEY); } catch (e) { /* noop */ }
+    render();
   }
 
-  AS.alarm = { start, check, test, reset, profiles: PROFILES };
+  AS.alarm = { start, check, test, reset, mute, profiles: PROFILES };
 })();
