@@ -33,20 +33,70 @@ AS.VARIABLES = [
 /** Variables que se muestran en tarjetas compactas (las más críticas) */
 AS.KEY_VARIABLES = ["o2", "ch4", "co", "temp"];
 
-/**
- * Zonas de la mina. `map` son coordenadas en el SVG esquemático (viewBox 800x420).
- * `profile` define la línea base del simulador (solo mock).
- */
+/** Zonas monitoreadas (cada una con sus sensores). La geometría está en AS.MINE_LAYOUT. */
 AS.ZONES = [
-  { id: "bocamina",   name: "Bocamina",               level: "Superficie", type: "Acceso / entrada de aire",    map: { x: 90,  y: 70 } },
-  { id: "galeria-1",  name: "Galería principal N1",   level: "Nivel 1",    type: "Transporte",                  map: { x: 250, y: 150 } },
-  { id: "frente-1",   name: "Frente de explotación 1", level: "Nivel 1",   type: "Frente activo",               map: { x: 470, y: 150 } },
-  { id: "inclinado",  name: "Inclinado / tambor",     level: "N1 → N2",    type: "Comunicación entre niveles",  map: { x: 330, y: 245 } },
-  { id: "galeria-2",  name: "Galería N2",             level: "Nivel 2",    type: "Transporte",                  map: { x: 420, y: 330 } },
-  { id: "frente-2",   name: "Frente de explotación 2", level: "Nivel 2",   type: "Frente activo",               map: { x: 640, y: 330 } },
-  { id: "bombeo",     name: "Estación de bombeo",     level: "Nivel 2",    type: "Servicios",                   map: { x: 230, y: 350 } },
-  { id: "retorno",    name: "Chimenea de retorno",    level: "N2 → Sup.",  type: "Salida de aire viciado",      map: { x: 720, y: 70 } },
+  { id: "bocamina",   name: "Bocamina",               level: "Superficie", type: "Acceso / entrada de aire" },
+  { id: "galeria-1",  name: "Galería principal N1",   level: "Nivel 1",    type: "Transporte" },
+  { id: "frente-1",   name: "Frente de explotación 1", level: "Nivel 1",   type: "Frente activo (labor ciega)" },
+  { id: "inclinado",  name: "Inclinado / tambor",     level: "N1 → N2",    type: "Comunicación entre niveles" },
+  { id: "galeria-2",  name: "Galería N2",             level: "Nivel 2",    type: "Transporte" },
+  { id: "frente-2",   name: "Frente de explotación 2", level: "Nivel 2",   type: "Frente activo (labor ciega)" },
+  { id: "bombeo",     name: "Estación de bombeo",     level: "Nivel 2",    type: "Servicios" },
+  { id: "retorno",    name: "Chimenea de retorno",    level: "N2 → Sup.",  type: "Salida de aire viciado / ventilador principal" },
 ];
+
+/**
+ * Plano esquemático de la mina (corte vertical, viewBox 800x440).
+ * En producción NO es fijo: lo entrega el backend (GET /api/mina/plano) a partir
+ * del plano de labores y ventilación que mantiene topografía, y se versiona cada
+ * vez que avanza un frente, se abre una labor o se cierra/sella una zona.
+ *
+ * nodes:    puntos del plano. `zoneId` enlaza con una zona monitoreada; los nodos
+ *           sin zona son cruces o puntos sin sensor. `label`: above | below | right.
+ * segments: labores entre nodos.
+ *   kind = intake    vía de aire fresco (entrada)
+ *          return    vía de aire viciado (salida hacia el ventilador principal)
+ *          heading   labor ciega (frente) ventilada con ventilador auxiliar y manga;
+ *                    el aire entra y sale por la misma labor, nunca la atraviesa
+ *          service   labor sin circulación principal (bombeo, depósitos)
+ * fans:     ventiladores (principal en superficie, auxiliares en la entrada de los frentes).
+ */
+AS.MINE_LAYOUT = {
+  version: 3,
+  updatedAt: "2026-10-27",
+  source: "Plano de ventilación — Topografía",
+  levels: [
+    { name: "Superficie", y: 30 },
+    { name: "Nivel 1", y: 160 },
+    { name: "Nivel 2", y: 340 },
+  ],
+  nodes: [
+    { id: "n-bocamina",  zoneId: "bocamina",  x: 90,  y: 70,  label: "below" },
+    { id: "n-g1",        zoneId: "galeria-1", x: 250, y: 150, label: "above" },
+    { id: "n-f1",        zoneId: "frente-1",  x: 470, y: 150, label: "above" },
+    { id: "n-incl",      zoneId: "inclinado", x: 330, y: 245, label: "right" },
+    { id: "n-g2",        zoneId: "galeria-2", x: 420, y: 330, label: "above" },
+    { id: "n-f2",        zoneId: "frente-2",  x: 560, y: 400, label: "right" },
+    { id: "n-bombeo",    zoneId: "bombeo",    x: 220, y: 350, label: "above" },
+    { id: "n-ret-n2",    name: "Galería de retorno N2", x: 720, y: 330, label: "above" },
+    { id: "n-chimenea",  zoneId: "retorno",   x: 720, y: 70,  label: "below" },
+  ],
+  segments: [
+    { from: "n-bocamina", to: "n-g1",       kind: "intake" },
+    { from: "n-g1",       to: "n-incl",     kind: "intake" },
+    { from: "n-incl",     to: "n-g2",       kind: "intake" },
+    { from: "n-g1",       to: "n-f1",       kind: "heading" },
+    { from: "n-g2",       to: "n-f2",       kind: "heading" },
+    { from: "n-g2",       to: "n-bombeo",   kind: "service" },
+    { from: "n-g2",       to: "n-ret-n2",   kind: "return" },
+    { from: "n-ret-n2",   to: "n-chimenea", kind: "return" },
+  ],
+  fans: [
+    { id: "VP-01", kind: "main", node: "n-chimenea", label: "Ventilador principal (extractor)" },
+    { id: "VA-01", kind: "auxiliary", segment: ["n-g1", "n-f1"] },
+    { id: "VA-02", kind: "auxiliary", segment: ["n-g2", "n-f2"] },
+  ],
+};
 
 AS.STATUS = {
   ok:   { label: "Normal",      badge: "badge-ok" },

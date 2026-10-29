@@ -116,6 +116,8 @@
   --map-rock: #e7e2d8;
   --map-tunnel: #cfd5de;
   --map-tunnel-stroke: #aab3c0;
+  --map-intake: #0891b2;
+  --map-return: #a16207;
 
   --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
   --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
@@ -169,6 +171,8 @@
     --map-rock: #1a1e24;
     --map-tunnel: #2a3240;
     --map-tunnel-stroke: #3b4658;
+    --map-intake: #22b8d6;
+    --map-return: #d6a35c;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
@@ -221,6 +225,8 @@
   --map-rock: #1a1e24;
   --map-tunnel: #2a3240;
   --map-tunnel-stroke: #3b4658;
+  --map-intake: #22b8d6;
+  --map-return: #d6a35c;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);

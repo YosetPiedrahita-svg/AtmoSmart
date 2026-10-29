@@ -157,46 +157,88 @@
   }
 
   /**
-   * Mapa esquemático (corte vertical) de la mina. Los nodos se colorean por estado
-   * y enlazan al detalle de cada zona.
+   * Mapa esquemático (corte vertical) de la mina, construido a partir del plano
+   * (AS.MINE_LAYOUT o lo que entregue el backend). Los nodos con zona se colorean
+   * por estado y enlazan al detalle; los tramos se dibujan según su tipo de
+   * ventilación (entrada, retorno, frente ciego con manga, servicio).
    */
-  function mineMap(el, zones) {
-    const pos = Object.fromEntries(AS.ZONES.map((z) => [z.id, z.map]));
-    const tunnels = [
-      ["bocamina", "galeria-1"],
-      ["galeria-1", "frente-1"],
-      ["galeria-1", "inclinado"],
-      ["inclinado", "galeria-2"],
-      ["galeria-2", "frente-2"],
-      ["galeria-2", "bombeo"],
-      ["frente-2", "retorno"],
-    ];
-    const path = ([a, b]) => `M${pos[a].x},${pos[a].y} L${pos[b].x},${pos[b].y}`;
-    const airflow = "M90,70 L250,150 L330,245 L420,330 L640,330 L720,70";
+  function mineMap(el, zones, layout = AS.MINE_LAYOUT) {
+    const nodes = Object.fromEntries(layout.nodes.map((n) => [n.id, n]));
+    const byZone = Object.fromEntries(zones.map((z) => [z.id, z]));
+    const seg = (s) => `M${nodes[s.from].x},${nodes[s.from].y} L${nodes[s.to].x},${nodes[s.to].y}`;
+    const along = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+
+    const tunnels = layout.segments.map((s) => `<path class="tunnel-edge" d="${seg(s)}"/>`).join("") +
+      layout.segments.map((s) => `<path class="tunnel" d="${seg(s)}"/>`).join("");
+
+    // Flujo de aire: azul = fresco (entrada), ocre = viciado (retorno)
+    const flows = layout.segments
+      .filter((s) => s.kind === "intake" || s.kind === "return")
+      .map((s) => `<path class="airflow ${s.kind === "return" ? "airflow-return" : ""}" d="${seg(s)}"/>`)
+      .join("");
+
+    // Frentes ciegos: manga desde el ventilador auxiliar hasta cerca del tope
+    const ducts = layout.segments
+      .filter((s) => s.kind === "heading")
+      .map((s) => {
+        const a = nodes[s.from];
+        const b = nodes[s.to];
+        const p0 = along(a, b, 0.22);
+        const p1 = along(a, b, 0.86);
+        return `<path class="duct" d="M${p0.x},${p0.y} L${p1.x},${p1.y}"/>`;
+      })
+      .join("");
+
+    const fans = (layout.fans || [])
+      .map((f) => {
+        if (f.kind === "main") {
+          const n = nodes[f.node];
+          return `<g class="fan fan-main"><rect x="${n.x - 9}" y="${n.y - 42}" width="18" height="18" rx="4"/><text class="fan-text" x="${n.x}" y="${n.y - 29}" text-anchor="middle">VP</text><title>${AS.escape(f.label || "Ventilador principal")}</title></g>`;
+        }
+        const p = along(nodes[f.segment[0]], nodes[f.segment[1]], 0.18);
+        return `<g class="fan"><circle cx="${p.x}" cy="${p.y}" r="8"/><text class="fan-text" x="${p.x}" y="${p.y + 3}" text-anchor="middle">VA</text><title>Ventilador auxiliar ${AS.escape(f.id)}</title></g>`;
+      })
+      .join("");
+
+    const label = (n, title, sub) => {
+      const pos = n.label || "above";
+      const x = pos === "right" ? n.x + 18 : n.x;
+      const y = pos === "below" ? n.y + 30 : pos === "right" ? n.y - 2 : n.y - 30;
+      const anchor = pos === "right" ? "start" : "middle";
+      return `<text class="map-label" x="${x}" y="${y}" text-anchor="${anchor}">${AS.escape(title)}</text>` +
+        (sub ? `<text class="map-sublabel" x="${x}" y="${y + 14}" text-anchor="${anchor}">${sub}</text>` : "");
+    };
+
+    const points = layout.nodes
+      .map((n) => {
+        const z = n.zoneId && byZone[n.zoneId];
+        if (!z) {
+          return `<g class="junction"><rect x="${n.x - 6}" y="${n.y - 6}" width="12" height="12" rx="2"/>${label(n, n.name || "", "Sin sensor")}</g>`;
+        }
+        const s = z.reading.zoneStatus;
+        const sub = s === "off" ? "Sin señal" : `CH₄ ${AS.fmt.number(z.reading.values.ch4, 2)}% · CO ${AS.fmt.number(z.reading.values.co, 0)} ppm`;
+        return `
+          <a href="zona.html?id=${z.id}" class="zone-node" data-status="${s}" tabindex="0" aria-label="${AS.escape(z.name)}: ${AS.STATUS[s].label}">
+            <circle class="halo" cx="${n.x}" cy="${n.y}" r="10"/>
+            <circle class="core" cx="${n.x}" cy="${n.y}" r="10"/>
+            ${label(n, z.name, sub)}
+          </a>`;
+      })
+      .join("");
 
     el.innerHTML = `
-      <svg class="mine-map" viewBox="0 0 800 420" role="img" aria-label="Mapa esquemático de la mina con estado por zona">
-        <rect class="rock" x="0" y="40" width="800" height="380" rx="12"/>
+      <svg class="mine-map" viewBox="0 0 800 440" role="img" aria-label="Mapa esquemático de la mina con estado por zona y circuito de ventilación">
+        <rect class="rock" x="0" y="40" width="800" height="400" rx="12"/>
         <line class="surface-line" x1="0" y1="40" x2="800" y2="40"/>
-        <text class="map-sublabel" x="12" y="30" style="stroke:none">Superficie</text>
-        <text class="map-sublabel" x="12" y="160">Nivel 1</text>
-        <text class="map-sublabel" x="12" y="340">Nivel 2</text>
-        ${tunnels.map((t) => `<path class="tunnel-edge" d="${path(t)}"/>`).join("")}
-        ${tunnels.map((t) => `<path class="tunnel" d="${path(t)}"/>`).join("")}
-        <path class="airflow" d="${airflow}"/>
-        ${zones.map((z) => {
-          const p = pos[z.id];
-          const s = z.reading.zoneStatus;
-          const labelY = p.y < 100 ? p.y + 34 : p.y - 22;
-          return `
-            <a href="zona.html?id=${z.id}" class="zone-node" data-status="${s}" tabindex="0" aria-label="${AS.escape(z.name)}: ${AS.STATUS[s].label}">
-              <circle class="halo" cx="${p.x}" cy="${p.y}" r="10"/>
-              <circle class="core" cx="${p.x}" cy="${p.y}" r="10"/>
-              <text class="map-label" x="${p.x}" y="${labelY}" text-anchor="middle">${AS.escape(z.name)}</text>
-              <text class="map-sublabel" x="${p.x}" y="${labelY + 14}" text-anchor="middle">${s === "off" ? "Sin señal" : `CH₄ ${AS.fmt.number(z.reading.values.ch4, 2)}% · CO ${AS.fmt.number(z.reading.values.co, 0)} ppm`}</text>
-            </a>`;
-        }).join("")}
-      </svg>`;
+        ${(layout.levels || []).map((l) => `<text class="map-sublabel" x="12" y="${l.y}"${l.y < 40 ? ' style="stroke:none"' : ""}>${AS.escape(l.name)}</text>`).join("")}
+        ${tunnels}${flows}${ducts}${fans}${points}
+      </svg>
+      <div class="map-legend mt-2">
+        <span><i class="line-in"></i>Aire fresco (entrada)</span>
+        <span><i class="line-out"></i>Aire viciado (retorno)</span>
+        <span><i class="line-duct"></i>Manga · ventilador auxiliar (VA)</span>
+        <span class="subtle">Plano v${layout.version} · ${AS.escape(layout.updatedAt)} · ${AS.escape(layout.source)}</span>
+      </div>`;
   }
 
   AS.charts = { line, sparkline, mineMap };

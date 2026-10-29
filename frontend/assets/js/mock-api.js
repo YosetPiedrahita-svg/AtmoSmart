@@ -348,6 +348,11 @@
   /* ---------- API pública ---------- */
 
   AS.api = {
+    /** GET /api/mina/plano — plano vigente (versionado por topografía). */
+    getMineLayout() {
+      return respond(AS.MINE_LAYOUT);
+    },
+
     /** GET /api/zonas/estado */
     getZonesStatus() {
       return respond(AS.ZONES.map((z) => Object.assign({}, z, { reading: currentReading(z.id) })));

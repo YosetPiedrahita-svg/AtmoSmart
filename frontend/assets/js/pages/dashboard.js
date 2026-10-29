@@ -108,10 +108,10 @@
   }
 
   function refresh() {
-    Promise.all([AS.api.getZonesStatus(), AS.refreshAlertCount(), AS.api.getDevices()]).then(([zones, alerts, devices]) => {
+    Promise.all([AS.api.getZonesStatus(), AS.refreshAlertCount(), AS.api.getDevices(), AS.api.getMineLayout()]).then(([zones, alerts, devices, layout]) => {
       renderBanner(zones, alerts);
       renderKpis(zones, alerts, devices);
-      AS.charts.mineMap(AS.qs("[data-map]"), zones);
+      AS.charts.mineMap(AS.qs("[data-map]"), zones, layout);
       renderAlerts(alerts);
       renderZones(zones);
     });

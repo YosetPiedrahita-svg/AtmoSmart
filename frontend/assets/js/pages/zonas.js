@@ -9,8 +9,8 @@
   }
 
   function refresh() {
-    AS.api.getZonesStatus().then((zones) => {
-      AS.charts.mineMap(AS.qs("[data-map]"), zones);
+    Promise.all([AS.api.getZonesStatus(), AS.api.getMineLayout()]).then(([zones, layout]) => {
+      AS.charts.mineMap(AS.qs("[data-map]"), zones, layout);
       AS.qs("[data-rows]").innerHTML = zones
         .map((z) => {
           const r = z.reading;
