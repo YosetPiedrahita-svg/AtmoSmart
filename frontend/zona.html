@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detalle de zona · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div>
+      <nav class="breadcrumbs" aria-label="Ruta"><a href="zonas.html">Mapa de la mina</a><span>/</span><span data-crumb>Zona</span></nav>
+      <div class="page-header">
+        <div>
+          <div class="cluster-sm"><h1 data-zone-name>Zona</h1><span data-zone-badge></span></div>
+          <p data-zone-meta></p>
+        </div>
+        <div class="cluster-sm">
+          <button class="btn btn-secondary" type="button" data-manual>Registro manual</button>
+          <a class="btn btn-secondary" data-history-link href="historial.html">Historial de la zona</a>
+        </div>
+      </div>
+    </div>
+
+    <div data-offline></div>
+
+    <section class="grid-4" data-tiles aria-label="Lecturas actuales"></section>
+
+    <section class="split">
+      <div class="card">
+        <div class="card-header">
+          <div class="cluster-sm">
+            <label class="visually-hidden" for="var-select">Variable</label>
+            <select class="select select-sm" id="var-select" style="width:auto"></select>
+          </div>
+          <div class="segmented" role="group" aria-label="Rango de tiempo" data-range>
+            <button type="button" data-min="60" aria-pressed="true">1 h</button>
+            <button type="button" data-min="480">Turno (8 h)</button>
+            <button type="button" data-min="1440">24 h</button>
+          </div>
+        </div>
+        <div class="card-body stack">
+          <div class="chart" data-chart></div>
+          <div class="chart-legend">
+            <span><i></i>Medición</span>
+            <span><i class="forecast"></i>Proyección 30 min</span>
+            <span><i class="warn"></i>Límite de precaución</span>
+            <span><i class="crit"></i>Límite de alarma</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <div class="card-header"><h2>Alertas de la zona</h2></div>
+          <div class="alert-list" data-alerts></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Equipos en la zona</h2></div>
+          <div class="table-wrap">
+            <table class="table"><tbody data-devices></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/manual-entry.js"></script>
+  <script src="assets/js/pages/zona.js"></script>
+</body>
+</html>

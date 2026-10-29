@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sensores y equipos · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Sensores y equipos</h1>
+        <p>Estado de comunicación, batería y calibración de los equipos que alimentan el sistema.</p>
+      </div>
+      <button class="btn btn-primary" type="button" data-manual>Registro manual de contingencia</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div><h2>¿Cómo llegan los datos?</h2><p>Nadie digita en el interior de la mina: la captura es automática.</p></div></div>
+      <div class="card-body">
+        <div class="flow">
+          <div class="flow-step"><strong>Sensores fijos</strong><p>Detectores multigas, temperatura/humedad y anemómetros instalados en cada zona.</p></div>
+          <div class="flow-step"><strong>Red subterránea</strong><p>Envío por cable o radio al gateway; si se corta, el equipo guarda las lecturas y las reenvía.</p></div>
+          <div class="flow-step"><strong>Gateway de superficie</strong><p>Recibe y valida las lecturas y las pasa a la aplicación, aun sin Internet.</p></div>
+          <div class="flow-step"><strong>AtmoSmart</strong><p>Evalúa límites y tendencias, genera alertas y guarda el historial.</p></div>
+          <div class="flow-step"><strong>Detectores portátiles</strong><p>Se descargan al dejarlos en la base de carga al final del turno. El registro manual es solo para contingencias.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="grid-4" aria-label="Resumen de equipos">
+      <div class="card kpi"><span class="kpi-label">En línea</span><span class="kpi-value" data-k="online">—</span></div>
+      <div class="card kpi"><span class="kpi-label">Sin señal</span><span class="kpi-value" data-k="off">—</span></div>
+      <div class="card kpi"><span class="kpi-label">Batería baja (&lt; 20 %)</span><span class="kpi-value" data-k="battery">—</span></div>
+      <div class="card kpi"><span class="kpi-label">Calibración vencida o próxima (7 d)</span><span class="kpi-value" data-k="cal">—</span></div>
+    </section>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Inventario</h2>
+        <div class="filters">
+          <div class="field"><label class="visually-hidden" for="f-type">Tipo</label><select class="select select-sm" id="f-type"></select></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Equipo</th><th>Tipo</th><th>Zona</th><th>Mide</th><th>Estado</th><th>Batería</th><th>Calibración</th><th>Última comunicación</th></tr></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/manual-entry.js"></script>
+  <script src="assets/js/pages/dispositivos.js"></script>
+</body>
+</html>

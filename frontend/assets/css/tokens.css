@@ -1,0 +1,230 @@
+/* ==========================================================================
+   AtmoSmart — Design tokens
+   Única fuente de verdad para colores, tipografía, espaciado y radios.
+   Tema claro por defecto; el oscuro se activa por preferencia del sistema
+   o forzado con <html data-theme="dark">.
+   ========================================================================== */
+
+:root {
+  /* Tipografía (sin fuentes externas: la app debe funcionar sin conexión) */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.5rem;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  /* Espaciado (escala de 4px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Radios y bordes */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+  --border-width: 1px;
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --topbar-h: 60px;
+  --content-max: 1440px;
+  --touch-min: 44px; /* objetivo táctil mínimo (uso con guantes / tablet) */
+
+  /* Movimiento */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  /* Capas */
+  --z-sidebar: 40;
+  --z-topbar: 30;
+  --z-overlay: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+
+  /* ---------- Colores: tema claro ---------- */
+  --color-bg: #f3f5f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f8fa;
+  --color-surface-3: #eef1f5;
+  --color-border: #dfe3ea;
+  --color-border-strong: #c6ccd6;
+  --color-text: #141a23;
+  --color-text-muted: #5b6573;
+  --color-text-subtle: #8a93a1;
+  --color-overlay: rgba(10, 14, 20, 0.45);
+
+  /* Marca: amarillo seguridad minera + azul acero */
+  --color-brand: #f2b705;
+  --color-brand-ink: #1b1400;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4fd8;
+  --color-primary-ink: #ffffff;
+  --color-primary-soft: #e6eefe;
+  --color-focus: #2563eb;
+
+  /* Estados de riesgo (semáforo) */
+  --status-ok: #16a34a;
+  --status-ok-soft: #e5f6eb;
+  --status-ok-ink: #0f6b31;
+
+  --status-warn: #d97706;
+  --status-warn-soft: #fdf1df;
+  --status-warn-ink: #8a4a03;
+
+  --status-crit: #dc2626;
+  --status-crit-soft: #fde7e7;
+  --status-crit-ink: #9b1717;
+
+  --status-off: #6b7280;
+  --status-off-soft: #eceef1;
+  --status-off-ink: #3f4652;
+
+  --status-info: #0891b2;
+  --status-info-soft: #e0f4f8;
+  --status-info-ink: #0b5f74;
+
+  /* Gráficos */
+  --chart-line: #2563eb;
+  --chart-grid: #e6e9ef;
+  --chart-axis: #8a93a1;
+  --chart-band-warn: rgba(217, 119, 6, 0.10);
+  --chart-band-crit: rgba(220, 38, 38, 0.10);
+
+  /* Mapa de la mina */
+  --map-rock: #e7e2d8;
+  --map-tunnel: #cfd5de;
+  --map-tunnel-stroke: #aab3c0;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.18);
+
+  color-scheme: light;
+}
+
+/* ---------- Colores: tema oscuro ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0c1016;
+    --color-surface: #141a22;
+    --color-surface-2: #19202a;
+    --color-surface-3: #212a36;
+    --color-border: #263040;
+    --color-border-strong: #364257;
+    --color-text: #e8edf4;
+    --color-text-muted: #9aa6b6;
+    --color-text-subtle: #6c7889;
+    --color-overlay: rgba(0, 0, 0, 0.6);
+
+    --color-primary: #4c8dff;
+    --color-primary-hover: #6aa1ff;
+    --color-primary-ink: #06101f;
+    --color-primary-soft: #16263f;
+    --color-focus: #6aa1ff;
+
+    --status-ok: #22c55e;
+    --status-ok-soft: #10291a;
+    --status-ok-ink: #7ee2a4;
+    --status-warn: #f59e0b;
+    --status-warn-soft: #2e2210;
+    --status-warn-ink: #fcd18a;
+    --status-crit: #ef4444;
+    --status-crit-soft: #331416;
+    --status-crit-ink: #ffa3a3;
+    --status-off: #8b95a3;
+    --status-off-soft: #1e242d;
+    --status-off-ink: #c3cad4;
+    --status-info: #22b8d6;
+    --status-info-soft: #0e2a31;
+    --status-info-ink: #8be0f0;
+
+    --chart-line: #4c8dff;
+    --chart-grid: #222b38;
+    --chart-axis: #6c7889;
+    --chart-band-warn: rgba(245, 158, 11, 0.12);
+    --chart-band-crit: rgba(239, 68, 68, 0.14);
+
+    --map-rock: #1a1e24;
+    --map-tunnel: #2a3240;
+    --map-tunnel-stroke: #3b4658;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #0c1016;
+  --color-surface: #141a22;
+  --color-surface-2: #19202a;
+  --color-surface-3: #212a36;
+  --color-border: #263040;
+  --color-border-strong: #364257;
+  --color-text: #e8edf4;
+  --color-text-muted: #9aa6b6;
+  --color-text-subtle: #6c7889;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  --color-primary: #4c8dff;
+  --color-primary-hover: #6aa1ff;
+  --color-primary-ink: #06101f;
+  --color-primary-soft: #16263f;
+  --color-focus: #6aa1ff;
+
+  --status-ok: #22c55e;
+  --status-ok-soft: #10291a;
+  --status-ok-ink: #7ee2a4;
+  --status-warn: #f59e0b;
+  --status-warn-soft: #2e2210;
+  --status-warn-ink: #fcd18a;
+  --status-crit: #ef4444;
+  --status-crit-soft: #331416;
+  --status-crit-ink: #ffa3a3;
+  --status-off: #8b95a3;
+  --status-off-soft: #1e242d;
+  --status-off-ink: #c3cad4;
+  --status-info: #22b8d6;
+  --status-info-soft: #0e2a31;
+  --status-info-ink: #8be0f0;
+
+  --chart-line: #4c8dff;
+  --chart-grid: #222b38;
+  --chart-axis: #6c7889;
+  --chart-band-warn: rgba(245, 158, 11, 0.12);
+  --chart-band-crit: rgba(239, 68, 68, 0.14);
+
+  --map-rock: #1a1e24;
+  --map-tunnel: #2a3240;
+  --map-tunnel-stroke: #3b4658;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}

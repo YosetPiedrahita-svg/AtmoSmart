@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Límites y configuración · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Límites y configuración</h1>
+        <p>Umbrales de precaución y alarma por variable, y preferencias de notificación.</p>
+      </div>
+    </div>
+
+    <div class="callout" data-callout>
+      <div><strong>Valores de referencia del prototipo.</strong> Deben validarse con Ingeniería de Minas contra el Decreto 1886 de 2015 (Reglamento de Seguridad en las Labores Mineras Subterráneas) y los valores límite permisibles vigentes. Los cambios se guardan en este navegador.</div>
+    </div>
+
+    <form class="card" id="limits-form">
+      <div class="card-header">
+        <div><h2>Límites por variable</h2><p>Deje en blanco los umbrales que no aplican.</p></div>
+        <div class="cluster-sm">
+          <button class="btn btn-sm btn-ghost" type="button" data-reset>Restaurar valores por defecto</button>
+          <button class="btn btn-sm btn-primary" type="submit">Guardar límites</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th class="num">Alarma mín.</th>
+              <th class="num">Precaución mín.</th>
+              <th class="num">Precaución máx.</th>
+              <th class="num">Alarma máx.</th>
+              <th>Unidad</th>
+            </tr>
+          </thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+    </form>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h2>Alertas predictivas</h2></div>
+        <div class="card-body stack">
+          <label class="switch"><input type="checkbox" data-pref="predictive" checked><span class="switch-track"></span>Activar alertas por tendencia</label>
+          <div class="form-grid">
+            <div class="field"><label for="p-window">Ventana de análisis</label><select class="select" id="p-window" data-pref="window"><option value="10">10 min</option><option value="15" selected>15 min</option><option value="30">30 min</option></select></div>
+            <div class="field"><label for="p-horizon">Avisar si la alarma se alcanzaría en menos de</label><select class="select" id="p-horizon" data-pref="horizon"><option value="15">15 min</option><option value="30" selected>30 min</option><option value="60">60 min</option></select></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Notificaciones</h2></div>
+        <div class="card-body stack">
+          <label class="switch"><input type="checkbox" data-pref="sound" checked><span class="switch-track"></span>Sonido en alertas de alarma</label>
+          <label class="switch"><input type="checkbox" data-pref="vibrate" checked><span class="switch-track"></span>Vibración en dispositivos móviles</label>
+          <label class="switch"><input type="checkbox" data-pref="escalate" checked><span class="switch-track"></span>Escalar a HSE si no se reconoce en 5 min</label>
+          <label class="switch"><input type="checkbox" data-pref="warnNotify"><span class="switch-track"></span>Notificar también alertas de precaución</label>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/configuracion.js"></script>
+</body>
+</html>

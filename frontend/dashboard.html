@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel general · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Panel general</h1>
+        <p>Estado atmosférico de la mina en tiempo real. Se actualiza cada 5 s.</p>
+      </div>
+      <div class="cluster-sm">
+        <a class="btn btn-secondary" href="historial.html" data-icon="history">Ver historial</a>
+        <a class="btn btn-primary" href="alertas.html" data-icon="alert">Alertas activas</a>
+      </div>
+    </div>
+
+    <div data-banner></div>
+
+    <section class="grid-4" aria-label="Indicadores del turno">
+      <div class="card kpi"><span class="kpi-label" data-icon="layers">Zonas en condición segura</span><span class="kpi-value" data-kpi="zones">—</span><span class="kpi-hint" data-kpi-hint="zones"></span></div>
+      <div class="card kpi"><span class="kpi-label" data-icon="alert">Alertas sin reconocer</span><span class="kpi-value" data-kpi="alerts">—</span><span class="kpi-hint" data-kpi-hint="alerts"></span></div>
+      <div class="card kpi"><span class="kpi-label" data-icon="users">Personal en zonas con riesgo</span><span class="kpi-value" data-kpi="exposed">—</span><span class="kpi-hint" data-kpi-hint="exposed"></span></div>
+      <div class="card kpi"><span class="kpi-label" data-icon="sensor">Sensores en línea</span><span class="kpi-value" data-kpi="devices">—</span><span class="kpi-hint" data-kpi-hint="devices"></span></div>
+    </section>
+
+    <section class="split">
+      <div class="card">
+        <div class="card-header">
+          <div><h2>Mapa de la mina</h2><p>Corte esquemático. Toque una zona para ver el detalle.</p></div>
+          <div class="map-legend">
+            <span><i style="background:var(--status-ok)"></i>Normal</span>
+            <span><i style="background:var(--status-warn)"></i>Precaución</span>
+            <span><i style="background:var(--status-crit)"></i>Alarma</span>
+            <span><i style="background:var(--status-off)"></i>Sin señal</span>
+          </div>
+        </div>
+        <div class="card-body map-scroll" data-map></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><h2>Alertas activas</h2><p>Ordenadas por severidad</p></div>
+          <a class="btn btn-sm btn-ghost" href="alertas.html">Ver todas</a>
+        </div>
+        <div class="alert-list" data-alerts></div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <div class="spread">
+        <h2>Zonas</h2>
+        <a class="btn btn-sm btn-ghost" href="zonas.html">Ver tabla completa</a>
+      </div>
+      <div class="grid-3" data-zones></div>
+    </section>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/pages/dashboard.js"></script>
+</body>
+</html>

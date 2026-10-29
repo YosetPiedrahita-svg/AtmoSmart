@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alertas · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Alertas</h1>
+        <p>Por umbral, por tendencia (predictivas), por pérdida de señal y por mantenimiento de equipos.</p>
+      </div>
+    </div>
+
+    <section class="grid-4" aria-label="Resumen">
+      <div class="card kpi"><span class="kpi-label">Alarma</span><span class="kpi-value" style="color:var(--status-crit)" data-count="crit">0</span></div>
+      <div class="card kpi"><span class="kpi-label">Precaución / predictivas</span><span class="kpi-value" style="color:var(--status-warn)" data-count="warn">0</span></div>
+      <div class="card kpi"><span class="kpi-label">Sin señal</span><span class="kpi-value" data-count="off">0</span></div>
+      <div class="card kpi"><span class="kpi-label">Mantenimiento</span><span class="kpi-value" style="color:var(--status-info)" data-count="info">0</span></div>
+    </section>
+
+    <div class="card">
+      <div class="tabs" role="tablist" data-tabs style="padding:0 var(--space-3)">
+        <button class="tab" role="tab" aria-selected="true" data-tab="pending">Sin reconocer <span class="badge badge-count no-dot" data-tab-count="pending">0</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="acked">Reconocidas <span class="badge no-dot" data-tab-count="acked">0</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="history">Resueltas <span class="badge no-dot" data-tab-count="history">0</span></button>
+      </div>
+      <div class="card-body" style="padding-bottom:0">
+        <div class="filters">
+          <div class="field"><label for="f-zone">Zona</label><select class="select select-sm" id="f-zone"></select></div>
+          <div class="field"><label for="f-sev">Severidad</label>
+            <select class="select select-sm" id="f-sev">
+              <option value="all">Todas</option>
+              <option value="crit">Alarma</option>
+              <option value="warn">Precaución</option>
+              <option value="off">Sin señal</option>
+              <option value="info">Mantenimiento</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-type">Tipo</label>
+            <select class="select select-sm" id="f-type">
+              <option value="all">Todos</option>
+              <option>Umbral superado</option>
+              <option>Tendencia predictiva</option>
+              <option>Sensor sin señal</option>
+              <option>Calibración vencida</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="alert-list mt-4" data-list role="tabpanel"></div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/alertas.js"></script>
+</body>
+</html>

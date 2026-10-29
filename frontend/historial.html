@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historial · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Historial de mediciones</h1>
+        <p>Consulta y exportación de lecturas para informes de turno y auditoría.</p>
+      </div>
+      <button class="btn btn-secondary" type="button" data-export>Exportar CSV</button>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="filters">
+          <div class="field"><label for="f-zone">Zona</label><select class="select" id="f-zone"></select></div>
+          <div class="field"><label for="f-range">Periodo</label>
+            <select class="select" id="f-range">
+              <option value="1">Última hora</option>
+              <option value="8" selected>Turno actual (8 h)</option>
+              <option value="24">Últimas 24 h</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-step">Intervalo</label>
+            <select class="select" id="f-step">
+              <option value="5">Cada 5 min</option>
+              <option value="10" selected>Cada 10 min</option>
+              <option value="30">Cada 30 min</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-only">Mostrar</label>
+            <select class="select" id="f-only">
+              <option value="all">Todas las lecturas</option>
+              <option value="out">Solo fuera de límites</option>
+              <option value="manual">Solo registros manuales</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="stack">
+      <h2>Resumen del periodo</h2>
+      <div class="grid-4" data-summary></div>
+    </section>
+
+    <div class="card">
+      <div class="card-header"><h2>Lecturas</h2><span class="muted text-sm" data-total></span></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead data-head></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+      <div class="card-footer pagination">
+        <span data-page-info></span>
+        <div class="cluster-sm">
+          <button class="btn btn-sm btn-secondary" type="button" data-prev>Anterior</button>
+          <button class="btn btn-sm btn-secondary" type="button" data-next>Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/pages/historial.js"></script>
+</body>
+</html>

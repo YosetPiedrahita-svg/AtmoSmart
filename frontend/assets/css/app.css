@@ -1,0 +1,8 @@
+/* ==========================================================================
+   AtmoSmart — Hoja de estilos de entrada.
+   Las páginas solo enlazan este archivo; el orden importa.
+   ========================================================================== */
+@import url("tokens.css");
+@import url("base.css");
+@import url("layout.css");
+@import url("components.css");

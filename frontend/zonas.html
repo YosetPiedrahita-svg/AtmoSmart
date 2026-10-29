@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mapa de la mina · AtmoSmart</title>
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+  <main class="page" id="contenido">
+    <div class="page-header">
+      <div>
+        <h1>Mapa de la mina</h1>
+        <p>Zonas monitoreadas, circuito de ventilación y estado actual de cada sector.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div><h2>Corte esquemático</h2><p>Las líneas punteadas azules indican el recorrido del aire de ventilación (entrada por bocamina, salida por chimenea).</p></div>
+        <div class="map-legend">
+          <span><i style="background:var(--status-ok)"></i>Normal</span>
+          <span><i style="background:var(--status-warn)"></i>Precaución</span>
+          <span><i style="background:var(--status-crit)"></i>Alarma</span>
+          <span><i style="background:var(--status-off)"></i>Sin señal</span>
+        </div>
+      </div>
+      <div class="card-body map-scroll" data-map></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Lecturas actuales por zona</h2><span class="muted text-xs" data-updated></span></div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead data-head></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/mock-api.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/pages/zonas.js"></script>
+</body>
+</html>
