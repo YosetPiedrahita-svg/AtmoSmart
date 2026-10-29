@@ -59,10 +59,18 @@
       <div class="card">
         <div class="card-header"><h2>Notificaciones</h2></div>
         <div class="card-body stack">
-          <label class="switch"><input type="checkbox" data-pref="sound" checked><span class="switch-track"></span>Sonido en alertas de alarma</label>
+          <label class="switch"><input type="checkbox" data-pref="sound" checked><span class="switch-track"></span>Sonido en alertas</label>
           <label class="switch"><input type="checkbox" data-pref="vibrate" checked><span class="switch-track"></span>Vibración en dispositivos móviles</label>
           <label class="switch"><input type="checkbox" data-pref="escalate" checked><span class="switch-track"></span>Escalar a HSE si no se reconoce en 5 min</label>
-          <label class="switch"><input type="checkbox" data-pref="warnNotify"><span class="switch-track"></span>Notificar también alertas de precaución</label>
+          <label class="switch"><input type="checkbox" data-pref="warnNotify" checked><span class="switch-track"></span>Avisar también las alertas de precaución</label>
+          <div class="stack-sm">
+            <strong class="text-sm">Probar avisos</strong>
+            <p class="muted text-sm">La <strong>alarma</strong> suena como sirena fuerte y rápida, vibra largo y se repite cada 20 s hasta reconocer la alerta. La <strong>precaución</strong> son dos tonos suaves y una vibración corta, una sola vez. "Sin señal" y mantenimiento no suenan.</p>
+            <div class="cluster-sm">
+              <button class="btn btn-secondary" type="button" data-test-alert="crit">Probar alarma</button>
+              <button class="btn btn-secondary" type="button" data-test-alert="warn">Probar precaución</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -72,6 +80,7 @@
   <script src="assets/js/mock-api.js"></script>
   <script src="assets/js/ui.js"></script>
   <script src="assets/js/chatbot.js"></script>
+  <script src="assets/js/alarm.js"></script>
   <script src="assets/js/pages/configuracion.js"></script>
 </body>
 </html>
