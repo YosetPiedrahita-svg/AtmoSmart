@@ -57,5 +57,8 @@
     });
   });
 
+  // Probar sonido y vibración de cada nivel
+  AS.qsa("[data-test-alert]").forEach((btn) => btn.addEventListener("click", () => AS.alarm && AS.alarm.test(btn.dataset.testAlert)));
+
   renderRows();
 })();

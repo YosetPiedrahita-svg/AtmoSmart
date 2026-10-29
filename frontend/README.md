@@ -50,6 +50,7 @@ frontend/
         ├── ui.js             íconos, shell, formato, sesión, tema, modales, toasts
         ├── charts.js         gráficos SVG y mapa de la mina
         ├── chatbot.js        asistente conversacional (botón flotante, por reglas)
+        ├── alarm.js          sonido y vibración de alertas (alarma y precaución)
         ├── manual-entry.js   formulario de registro manual de contingencia
         └── pages/*.js        lógica de cada página
 ```
@@ -81,6 +82,22 @@ Preguntas que entiende:
 - La conversación se conserva al cambiar de página durante la sesión (`sessionStorage`).
 - `AS.chatbot.reply(texto, datos)` concentra la lógica; para conectar un modelo de lenguaje
   basta con reemplazar esa función por una llamada al backend.
+
+## Sonido y vibración de alertas
+
+`alarm.js` vigila las alertas cada 5 s en todas las páginas con menú lateral y avisa solo en dos niveles,
+cada uno con su propio carácter (se prueban en **Límites y configuración → Probar avisos**):
+
+| Nivel | Sonido | Vibración | Repetición |
+| --- | --- | --- | --- |
+| **Alarma** | Sirena de dos tonos (988 / 784 Hz), onda cuadrada, rápida y fuerte (~2,5 s) | Larga e insistente (4 pulsos de 500 ms) | Cada 20 s mientras siga sin reconocerse |
+| **Precaución** (incluye predictivas) | Dos tonos suaves (660 Hz), onda triangular, volumen bajo | Corta (doble pulso de 160 ms) | Una sola vez al aparecer o al escalar a alarma |
+| Sin señal y mantenimiento | No suenan | No vibran | — |
+
+- Preferencias (guardadas en el navegador): sonido, vibración y "avisar también las alertas de precaución" (activas por defecto).
+- Al abrir la sesión, las alertas de precaución que ya existían no suenan; una alarma sin reconocer sí.
+- El navegador exige un gesto del usuario para reproducir audio: el primer clic o toque en la página lo activa.
+- La vibración solo existe en móviles/tablets Android; en computador o iPhone el aviso es sonoro y visual (toast).
 
 ## Sistema de diseño
 

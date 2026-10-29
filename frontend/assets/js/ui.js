@@ -245,6 +245,7 @@
     AS.refreshAlertCount();
     AS.markSynced();
     if (AS.mountChatbot) AS.mountChatbot(); // asistente conversacional (chatbot.js)
+    if (AS.alarm) AS.alarm.start(); // sonido y vibración de alertas (alarm.js)
   };
 
   AS.refreshAlertCount = function () {
