@@ -90,7 +90,7 @@ cada uno con su propio carácter (se prueban en **Límites y configuración → 
 
 | Nivel | Sonido | Vibración | Repetición |
 | --- | --- | --- | --- |
-| **Alarma** | Sirena de dos tonos (988 / 784 Hz), onda cuadrada, rápida y fuerte (~2,5 s) | Larga e insistente (4 pulsos de 500 ms) | Cada 20 s mientras siga sin reconocerse |
+| **Alarma** | Sirena de dos tonos (988 / 784 Hz), onda cuadrada, rápida y fuerte (~2,5 s) | Larga e insistente (4 pulsos de 500 ms) | Sin parar hasta pulsar "Silenciar" en la tarjeta (la alarma sigue activa hasta reconocerla en Alertas) |
 | **Precaución** (incluye predictivas) | Dos tonos suaves (660 Hz), onda triangular, volumen bajo | Corta (doble pulso de 160 ms) | Una sola vez al aparecer o al escalar a alarma |
 | Sin señal y mantenimiento | No suenan | No vibran | — |
 
